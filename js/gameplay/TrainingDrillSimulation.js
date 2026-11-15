@@ -406,3 +406,4 @@ export class TrainingDrillSimulation {
     this.ball.dispose();
   }
 }
+
