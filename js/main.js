@@ -138,11 +138,6 @@ export class FC27Engine {
     };
   }
 
-    // Start master game loop
-    this.loop = this.loop.bind(this);
-    requestAnimationFrame(this.loop);
-  }
-
   initInputs() {
     window.addEventListener('keydown', (e) => {
       // Audio context unlock on first key interaction
