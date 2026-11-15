@@ -508,25 +508,35 @@ export class MatchSimulation {
     this.matchState = 'goal_celebration';
     this.sound.playNetRustle();
     this.sound.playGoalCheer();
+    if (window.fcEngine?.music) window.fcEngine.music.duckVolume(0.12, 4.2);
 
+    let scorer = null;
     if (scoringTeam === 'home') {
       this.homeScore++;
-      const scorer = this.activeUserPlayer || this.homePlayers[10];
+      scorer = this.activeUserPlayer || this.homePlayers[10];
       scorer.triggerCelebrate();
       this.notify(`GOAL! ${this.homeTeamData.name.toUpperCase()} SCORE!`);
     } else {
       this.awayScore++;
-      this.awayPlayers[10].triggerCelebrate();
+      scorer = this.awayPlayers[10];
+      scorer.triggerCelebrate();
       this.notify(`GOAL! ${this.awayTeamData.name.toUpperCase()} SCORE!`);
+    }
+
+    if (window.fcEngine?.cameraSystem) {
+      window.fcEngine.cameraSystem.triggerCelebration(scorer);
     }
 
     if (this.onScoreUpdate) {
       this.onScoreUpdate(this.homeScore, this.awayScore);
     }
 
-    // Celebrate for 4 seconds then restart kickoff
+    // Celebrate for 4 seconds then restart kickoff and restore broadcast cam
     setTimeout(() => {
       if (this.matchState === 'goal_celebration') {
+        if (window.fcEngine?.cameraSystem) {
+          window.fcEngine.cameraSystem.setMode('broadcast');
+        }
         this.resetToKickoff(scoringTeam === 'home' ? 'away' : 'home');
       }
     }, 4200);

@@ -337,6 +337,10 @@ export class Player3D {
       this.indicator.position.y = 2.8 + Math.sin(this.animTime * 6) * 0.08;
       this.groundRing.rotation.z = this.animTime * 2.5;
       this.speedWings.rotation.z = this.animTime * 3.5;
+      if (this.nameplate) {
+        this.nameplate.rotation.y = -this.rotation;
+        this.nameplate.rotation.x = -0.35;
+      }
     }
 
     const currentSpeed = this.velocity.length();
