@@ -5,9 +5,11 @@
  */
 
 import { SoundSystem } from './audio/SoundSystem.js';
+import { MusicPlayer } from './audio/MusicPlayer.js';
 import { Stadium3D } from './graphics/Stadium3D.js';
 import { CameraSystem } from './graphics/CameraSystem.js';
 import { MatchSimulation } from './gameplay/MatchSimulation.js';
+import { TrainingDrillSimulation } from './gameplay/TrainingDrillSimulation.js';
 import { MenuManager } from './ui/MenuManager.js';
 import { KickOffUI } from './ui/KickOffUI.js';
 import { SquadBuilderUI } from './ui/SquadBuilderUI.js';
@@ -15,6 +17,7 @@ import { CareerModeUI } from './ui/CareerModeUI.js';
 import { TournamentUI } from './ui/TournamentUI.js';
 import { TrainingArenaUI } from './ui/TrainingArenaUI.js';
 import { MatchHUD } from './ui/MatchHUD.js';
+import { TrainingHUD } from './ui/TrainingHUD.js';
 import { TEAMS, STADIUMS } from './data/TeamsData.js';
 
 export class FC27Engine {
@@ -22,8 +25,9 @@ export class FC27Engine {
     this.canvas = document.getElementById('webglCanvas');
     this.uiContainer = document.getElementById('uiRoot');
 
-    // 1. Audio System
+    // 1. Audio & Music Soundtrack Engine
     this.sound = new SoundSystem();
+    this.music = new MusicPlayer();
 
     // 2. Three.js Scene Setup
     this.scene = new THREE.Scene();
@@ -57,16 +61,82 @@ export class FC27Engine {
     };
 
     // 5. Game State
-    this.activeMode = 'menu'; // 'menu', 'kickoff_setup', 'match', 'squad', 'career', 'tournament', 'training'
+    this.activeMode = 'menu'; // 'menu', 'kickoff_setup', 'match', 'training_drill', 'squad', 'career', 'tournament', 'training'
     this.currentSimulation = null;
+    this.currentDrillSim = null;
     this.currentHUD = null;
+    this.currentDrillHUD = null;
     this.activeUI = null;
 
     this.lastTime = performance.now();
 
     this.initInputs();
+    this.initMusicWidget();
     this.initRouter();
     this.handleResize();
+
+    // Start master game loop
+    this.loop = this.loop.bind(this);
+    requestAnimationFrame(this.loop);
+  }
+
+  initMusicWidget() {
+    const widget = document.createElement('div');
+    widget.className = 'fc-music-widget';
+    widget.id = 'musicWidget';
+    widget.innerHTML = `
+      <div class="music-disc-spin" id="musicDisc">💿</div>
+      <div class="music-meta">
+        <div class="music-track-title" id="musicTrackTitle">${this.music.getCurrentTrack().title}</div>
+        <div class="music-bars" id="musicBars">
+          <span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <button class="music-btn" id="musicPrev" title="Previous Track">⏮</button>
+      <button class="music-btn" id="musicToggle" title="Play / Pause">▶</button>
+      <button class="music-btn" id="musicNext" title="Next Track">⏭</button>
+    `;
+    document.body.appendChild(widget);
+
+    const toggleBtn = document.getElementById('musicToggle');
+    const disc = document.getElementById('musicDisc');
+    const bars = document.getElementById('musicBars');
+    const title = document.getElementById('musicTrackTitle');
+
+    const updateUI = () => {
+      toggleBtn.textContent = this.music.isPlaying ? '⏸' : '▶';
+      disc.classList.toggle('paused', !this.music.isPlaying);
+      bars.style.opacity = this.music.isPlaying ? '1' : '0.3';
+      title.textContent = this.music.getCurrentTrack().title;
+    };
+
+    toggleBtn.onclick = () => {
+      this.sound.ensureContext();
+      this.music.ensureContext();
+      this.music.toggle();
+      updateUI();
+    };
+
+    document.getElementById('musicNext').onclick = () => {
+      this.sound.ensureContext();
+      this.music.ensureContext();
+      this.music.nextTrack();
+      if (!this.music.isPlaying) this.music.start();
+      updateUI();
+    };
+
+    document.getElementById('musicPrev').onclick = () => {
+      this.sound.ensureContext();
+      this.music.ensureContext();
+      this.music.prevTrack();
+      if (!this.music.isPlaying) this.music.start();
+      updateUI();
+    };
+
+    this.music.onTrackChange = (track) => {
+      title.textContent = track.title;
+    };
+  }
 
     // Start master game loop
     this.loop = this.loop.bind(this);
