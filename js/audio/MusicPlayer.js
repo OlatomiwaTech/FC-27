@@ -1,59 +1,59 @@
 /**
- * FC 27 - Real Stock Royalty-Free Sports Music Soundtrack Engine
- * Generates driving 124-128 BPM electronic sports anthems (FIFA/EA FC style)
- * with 4-on-the-floor kicks, rolling synth bass, euphoric chord drops, and melodic leads.
- * 100% Royalty-Free, zero external network dependency, seamless dynamic looping.
+ * FC 27 - High-Energy Stadium Soundtrack Engine (FIFA/EA FC Style)
+ * Produces adrenaline-pumping 128 BPM electro-rock sports anthems
+ * with crunchy bass guitar riffs, 4-on-the-floor kick punch, brass synth hooks,
+ * stadium clap grooves, and crowd choir chants.
  */
 
 export class MusicPlayer {
   constructor(audioContext = null) {
     this.ctx = audioContext;
     this.isPlaying = false;
-    this.volume = 0.45;
+    this.volume = 0.55;
     this.currentTrackIndex = 0;
-    this.tempo = 124; // BPM
     this.step = 0;
     this.timerId = null;
 
     this.tracks = [
       {
-        id: 'neon_strike',
-        title: 'NEON STRIKE (FC 27 MAIN THEME)',
-        genre: 'Stadium Electro House',
-        bpm: 124,
-        scale: [50, 53, 55, 57, 60, 62], // D minor pentatonic: D3, F3, G3, A3, C4, D4
-        bassline: [38, 38, 41, 41, 36, 36, 43, 43], // D2, F2, C2, G2
+        id: 'apex_overdrive',
+        title: '⚡ APEX OVERDRIVE — FC 27 MAIN THEME',
+        genre: 'FIFA Electro-Rock Anthem',
+        bpm: 128,
+        // High-energy D-minor rock riff: D, D, F, G, G#, G, F, D
+        riff: [38, 38, 41, 43, 44, 43, 41, 38],
+        leadNotes: [62, 62, 65, 67, 68, 67, 65, 62, 74, 72, 69, 67],
         chords: [
           [50, 53, 57, 62], // Dm
+          [46, 50, 53, 58], // Bb
           [41, 45, 48, 53], // F
-          [36, 40, 43, 48], // C
-          [43, 47, 50, 55]  // G
+          [43, 47, 50, 55]  // C
         ]
       },
       {
-        id: 'champions_pulse',
-        title: 'CHAMPIONS PULSE',
+        id: 'stadium_hyperdrive',
+        title: '🔥 STADIUM HYPERDRIVE (FESTIVAL DROP)',
         genre: 'Club Progressive Anthem',
-        bpm: 128,
-        scale: [48, 51, 55, 58, 60, 63], // C minor
-        bassline: [36, 36, 39, 39, 44, 44, 46, 46], // C2, Eb2, Ab2, Bb2
+        bpm: 130,
+        riff: [36, 36, 39, 41, 43, 41, 39, 36],
+        leadNotes: [60, 63, 67, 72, 70, 67, 63, 60],
         chords: [
           [48, 51, 55, 60], // Cm
-          [39, 43, 46, 51], // Eb
           [44, 48, 51, 56], // Ab
+          [39, 43, 46, 51], // Eb
           [46, 50, 53, 58]  // Bb
         ]
       },
       {
-        id: 'samba_flair',
-        title: 'JOGA BONITO (SAMBA VIBES)',
-        genre: 'Latin Groove & Tech',
-        bpm: 122,
-        scale: [45, 48, 50, 52, 55, 57], // A minor
-        bassline: [33, 33, 36, 36, 38, 38, 40, 40], // A1, C2, D2, E2
+        id: 'joga_fever',
+        title: '⚽ JOGA FEVER (SAMBA ELECTRO BASS)',
+        genre: 'Brazilian Tech Funk',
+        bpm: 125,
+        riff: [33, 36, 38, 40, 43, 40, 38, 36],
+        leadNotes: [57, 60, 64, 69, 67, 64, 60, 57],
         chords: [
           [45, 48, 52, 57], // Am
-          [36, 40, 43, 48], // C
+          [41, 45, 48, 53], // F
           [38, 41, 45, 50], // Dm
           [40, 44, 47, 52]  // E7
         ]
@@ -75,7 +75,17 @@ export class MusicPlayer {
     if (!this.masterGain) {
       this.masterGain = this.ctx.createGain();
       this.masterGain.gain.setValueAtTime(this.volume, this.ctx.currentTime);
-      this.masterGain.connect(this.ctx.destination);
+
+      // Master Compressor to give it that punchy commercial radio / AAA sports game polish
+      this.compressor = this.ctx.createDynamicsCompressor();
+      this.compressor.threshold.setValueAtTime(-14, this.ctx.currentTime);
+      this.compressor.knee.setValueAtTime(8, this.ctx.currentTime);
+      this.compressor.ratio.setValueAtTime(4, this.ctx.currentTime);
+      this.compressor.attack.setValueAtTime(0.005, this.ctx.currentTime);
+      this.compressor.release.setValueAtTime(0.12, this.ctx.currentTime);
+
+      this.masterGain.connect(this.compressor);
+      this.compressor.connect(this.ctx.destination);
     }
   }
 
@@ -131,9 +141,9 @@ export class MusicPlayer {
     }
   }
 
-  duckVolume(target = 0.15, duration = 2.5) {
+  duckVolume(target = 0.15, duration = 3.0) {
     if (!this.masterGain || !this.ctx) return;
-    this.masterGain.gain.linearRampToValueAtTime(target, this.ctx.currentTime + 0.2);
+    this.masterGain.gain.linearRampToValueAtTime(target, this.ctx.currentTime + 0.15);
     setTimeout(() => {
       if (this.masterGain && this.ctx) {
         this.masterGain.gain.linearRampToValueAtTime(this.volume, this.ctx.currentTime + 0.8);
@@ -148,7 +158,7 @@ export class MusicPlayer {
     const secondsPerBeat = 60.0 / track.bpm;
     const stepDuration = secondsPerBeat / 4; // 16th note steps
 
-    this.playStep(this.step, track);
+    this.playStep(this.step, track, stepDuration);
     this.step = (this.step + 1) % 64; // 4-bar loop of 16 steps
 
     if (this.onBeat && this.step % 4 === 0) {
@@ -160,45 +170,49 @@ export class MusicPlayer {
     }, stepDuration * 1000);
   }
 
-  playStep(step, track) {
+  playStep(step, track, stepDuration) {
     const now = this.ctx.currentTime;
     const beatIndex = Math.floor(step / 4);
     const sixteenth = step % 4;
 
-    // 1. Kick Drum: on every quarter note (step 0, 4, 8, 12, 16...)
+    // 1. Heavy Punchy Kick Drum on every beat
     if (sixteenth === 0) {
       this.playKick(now);
     }
 
-    // 2. Off-beat Hi-Hat: on every step 2 of 4 (off-beat 8th note)
+    // 2. Off-Beat Shakers & Open Hi-Hats
     if (sixteenth === 2) {
-      this.playHiHat(now, 0.08);
-    } else if (sixteenth === 1 || sixteenth === 3) {
-      // Light shaker
-      this.playHiHat(now, 0.03);
+      this.playOpenHiHat(now);
+    } else {
+      this.playShaker(now);
     }
 
-    // 3. Snare / Clap: on beats 2 and 4 (step 4 and 12 in each 16)
+    // 3. Stadium Snare / Clap on beats 2 and 4
     if (sixteenth === 0 && (beatIndex % 4 === 1 || beatIndex % 4 === 3)) {
-      this.playSnare(now);
+      this.playStadiumClap(now);
     }
 
-    // 4. Rolling Synth Bassline (16th note groove)
-    const bassNoteMidi = track.bassline[Math.floor(step / 8) % track.bassline.length];
-    if (sixteenth === 0 || sixteenth === 2 || (sixteenth === 3 && Math.random() > 0.4)) {
-      this.playSynthBass(now, bassNoteMidi, stepDuration * 1.5);
+    // 4. Crunchy Rock Guitar / Bass Riff (16th note drive)
+    const riffMidi = track.riff[Math.floor(step / 2) % track.riff.length];
+    if (sixteenth === 0 || sixteenth === 2 || (sixteenth === 3 && step % 8 !== 0)) {
+      this.playCrunchyBass(now, riffMidi, stepDuration * 1.8);
     }
 
-    // 5. Chord Stabs: on beat 1 and syncopated beat 3.5
-    if (sixteenth === 0 && beatIndex % 2 === 0) {
+    // 5. Huge Brass / Synth Chord Stabs on beat 1 and syncopated beat 3.5
+    if ((sixteenth === 0 && beatIndex % 2 === 0) || (sixteenth === 2 && beatIndex % 4 === 2)) {
       const chordIndex = Math.floor(step / 16) % track.chords.length;
-      this.playChordStab(now, track.chords[chordIndex]);
+      this.playBrassChords(now, track.chords[chordIndex]);
     }
 
-    // 6. Arpeggiated Melody Lead
-    if (step >= 16) { // lead enters in bar 2
-      const noteMidi = track.scale[(step * 3 + beatIndex) % track.scale.length] + 12;
-      this.playLeadNote(now, noteMidi);
+    // 6. High Energy Lead Melody (Enters after bar 1)
+    if (step >= 16) {
+      const noteMidi = track.leadNotes[step % track.leadNotes.length];
+      this.playSynthLead(now, noteMidi);
+    }
+
+    // 7. Stadium Crowd Vocal Chant ("OH-WAY-OH")
+    if (step >= 32 && sixteenth === 0 && (beatIndex % 4 === 0 || beatIndex % 4 === 2)) {
+      this.playStadiumVocal(now, 57 + (beatIndex % 2 === 0 ? 0 : 3));
     }
   }
 
@@ -210,86 +224,118 @@ export class MusicPlayer {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = 'sine';
-    osc.frequency.setValueAtTime(150, time);
-    osc.frequency.exponentialRampToValueAtTime(38, time + 0.09);
+    // Huge 180Hz punch dropping to 35Hz sub
+    osc.frequency.setValueAtTime(180, time);
+    osc.frequency.exponentialRampToValueAtTime(35, time + 0.1);
 
-    gain.gain.setValueAtTime(0.7, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+    gain.gain.setValueAtTime(0.85, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
 
     osc.connect(gain);
     gain.connect(this.masterGain);
     osc.start(time);
-    osc.stop(time + 0.13);
+    osc.stop(time + 0.15);
   }
 
-  playSnare(time) {
-    // Noise burst + mid tone
-    const noise = this.ctx.createBufferSource();
-    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.15, this.ctx.sampleRate);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < data.length; i++) data[i] = (Math.random() * 2 - 1) * 0.4;
-    noise.buffer = buf;
+  playStadiumClap(time) {
+    // Twin noise bursts + reverb snap
+    [0, 0.012, 0.024].forEach((offset, i) => {
+      const noise = this.ctx.createBufferSource();
+      const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.2, this.ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let j = 0; j < data.length; j++) data[j] = (Math.random() * 2 - 1) * 0.45;
+      noise.buffer = buf;
 
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = 'highpass';
-    filter.frequency.setValueAtTime(1200, time);
+      const filter = this.ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1400 + i * 200, time + offset);
+      filter.Q.setValueAtTime(1.8, time + offset);
 
-    const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(0.4, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.14);
+      const gain = this.ctx.createGain();
+      gain.gain.setValueAtTime(0.45 / (i + 1), time + offset);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + offset + 0.18);
 
-    noise.connect(filter);
-    filter.connect(gain);
-    gain.connect(this.masterGain);
-    noise.start(time);
-    noise.stop(time + 0.15);
+      noise.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+      noise.start(time + offset);
+      noise.stop(time + offset + 0.2);
+    });
   }
 
-  playHiHat(time, amp = 0.06) {
+  playOpenHiHat(time) {
     const noise = this.ctx.createBufferSource();
-    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.05, this.ctx.sampleRate);
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.12, this.ctx.sampleRate);
     const data = buf.getChannelData(0);
     for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
     noise.buffer = buf;
 
     const filter = this.ctx.createBiquadFilter();
     filter.type = 'highpass';
-    filter.frequency.setValueAtTime(7500, time);
+    filter.frequency.setValueAtTime(6800, time);
 
     const gain = this.ctx.createGain();
-    gain.gain.setValueAtTime(amp, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.045);
+    gain.gain.setValueAtTime(0.12, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
 
     noise.connect(filter);
     filter.connect(gain);
     gain.connect(this.masterGain);
     noise.start(time);
-    noise.stop(time + 0.05);
+    noise.stop(time + 0.12);
   }
 
-  playSynthBass(time, midi, duration = 0.15) {
-    const osc = this.ctx.createOscillator();
+  playShaker(time) {
+    const noise = this.ctx.createBufferSource();
+    const buf = this.ctx.createBuffer(1, this.ctx.sampleRate * 0.04, this.ctx.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < data.length; i++) data[i] = Math.random() * 2 - 1;
+    noise.buffer = buf;
+
     const filter = this.ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(9200, time);
+    filter.Q.setValueAtTime(2.5, time);
+
     const gain = this.ctx.createGain();
+    gain.gain.setValueAtTime(0.04, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.038);
 
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(this.midiToFreq(midi), time);
-
-    filter.type = 'lowpass';
-    filter.frequency.setValueAtTime(650, time);
-    filter.frequency.exponentialRampToValueAtTime(140, time + 0.12);
-
-    gain.gain.setValueAtTime(0.35, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
-
-    osc.connect(filter);
+    noise.connect(filter);
     filter.connect(gain);
     gain.connect(this.masterGain);
-    osc.start(time);
-    osc.stop(time + duration + 0.02);
+    noise.start(time);
+    noise.stop(time + 0.04);
   }
 
-  playChordStab(time, chordMidis) {
+  playCrunchyBass(time, midi, duration = 0.2) {
+    // Twin detuned sawtooth oscillators with drive
+    [-6, 6].forEach(detune => {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(this.midiToFreq(midi), time);
+      osc.detune.setValueAtTime(detune, time);
+
+      filter.type = 'lowpass';
+      filter.frequency.setValueAtTime(1400, time);
+      filter.frequency.exponentialRampToValueAtTime(260, time + 0.14);
+      filter.Q.setValueAtTime(4.0, time); // resonant bite!
+
+      gain.gain.setValueAtTime(0.3, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(time);
+      osc.stop(time + duration + 0.02);
+    });
+  }
+
+  playBrassChords(time, chordMidis) {
     chordMidis.forEach(midi => {
       const osc = this.ctx.createOscillator();
       const filter = this.ctx.createBiquadFilter();
@@ -298,35 +344,64 @@ export class MusicPlayer {
       osc.type = 'sawtooth';
       osc.frequency.setValueAtTime(this.midiToFreq(midi), time);
 
-      filter.type = 'lowpass';
-      filter.frequency.setValueAtTime(1800, time);
-      filter.frequency.exponentialRampToValueAtTime(400, time + 0.22);
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(1600, time);
+      filter.Q.setValueAtTime(2.0, time);
 
-      gain.gain.setValueAtTime(0.12, time);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.25);
+      gain.gain.setValueAtTime(0.18, time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.28);
 
       osc.connect(filter);
       filter.connect(gain);
       gain.connect(this.masterGain);
       osc.start(time);
-      osc.stop(time + 0.26);
+      osc.stop(time + 0.3);
     });
   }
 
-  playLeadNote(time, midi) {
+  playSynthLead(time, midi) {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
 
-    osc.type = 'triangle';
+    osc.type = 'square';
     osc.frequency.setValueAtTime(this.midiToFreq(midi), time);
 
-    gain.gain.setValueAtTime(0.09, time);
-    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.12);
+    gain.gain.setValueAtTime(0.12, time);
+    gain.gain.exponentialRampToValueAtTime(0.001, time + 0.11);
 
-    osc.connect(gain);
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(3200, time);
+
+    osc.connect(filter);
+    filter.connect(gain);
     gain.connect(this.masterGain);
     osc.start(time);
-    osc.stop(time + 0.13);
+    osc.stop(time + 0.12);
+  }
+
+  playStadiumVocal(time, midi) {
+    // Formant vocal choir simulation ("OH-WAY")
+    [320, 800, 2400].forEach((formant, i) => {
+      const osc = this.ctx.createOscillator();
+      const filter = this.ctx.createBiquadFilter();
+      const gain = this.ctx.createGain();
+
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(this.midiToFreq(midi), time);
+
+      filter.type = 'bandpass';
+      filter.frequency.setValueAtTime(formant, time);
+      filter.Q.setValueAtTime(5.0, time);
+
+      gain.gain.setValueAtTime(0.08 / (i + 1), time);
+      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.35);
+
+      osc.connect(filter);
+      filter.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(time);
+      osc.stop(time + 0.38);
+    });
   }
 }
-
