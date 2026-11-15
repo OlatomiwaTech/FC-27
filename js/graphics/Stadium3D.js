@@ -37,12 +37,27 @@ export class Stadium3D {
   }
 
   createLights() {
-    // Ambient light
-    const ambient = new THREE.AmbientLight(this.data.ambientColor || 0x1f293d, 1.2);
+    // Master Stadium Floodlight Sunlight
+    const mainSun = new THREE.DirectionalLight(0xffffff, 2.4);
+    mainSun.position.set(15, 65, 30);
+    mainSun.castShadow = true;
+    mainSun.shadow.mapSize.width = 2048;
+    mainSun.shadow.mapSize.height = 2048;
+    mainSun.shadow.camera.near = 10;
+    mainSun.shadow.camera.far = 160;
+    mainSun.shadow.camera.left = -65;
+    mainSun.shadow.camera.right = 65;
+    mainSun.shadow.camera.top = 45;
+    mainSun.shadow.camera.bottom = -45;
+    mainSun.shadow.bias = -0.0005;
+    this.group.add(mainSun);
+
+    // Bright Ambient Fill
+    const ambient = new THREE.AmbientLight(0xffffff, 1.4);
     this.group.add(ambient);
 
     // Hemispheric sky-to-ground bounce
-    const hemi = new THREE.HemisphereLight(0xd9e8ff, 0x1e3a1f, 0.6);
+    const hemi = new THREE.HemisphereLight(0xd9e8ff, 0x1e3a1f, 0.8);
     hemi.position.set(0, 40, 0);
     this.group.add(hemi);
 

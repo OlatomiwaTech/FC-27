@@ -32,14 +32,14 @@ export class CameraSystem {
 
     switch (this.mode) {
       case 'broadcast': {
-        // TV Broadcast Camera: elevated side-line with lead-in and dynamic zoom
-        const leadX = (ballPos.x * 0.75);
+        // TV Broadcast Camera: close dynamic action camera (User Image 3 style)
+        const leadX = (ballPos.x * 0.85);
         const pitchCloseness = Math.abs(ballPos.x) / 52.5; // 0 at center, 1 at goal line
-        const zoomY = 22 - pitchCloseness * 4;
-        const zoomZ = 36 - pitchCloseness * 5;
+        const zoomY = 12.0 - pitchCloseness * 2.0;
+        const zoomZ = 18.0 - pitchCloseness * 2.5;
 
         desiredPos.set(leadX, zoomY, zoomZ);
-        desiredLookAt.set(ballPos.x * 0.9, ballPos.y * 0.5, ballPos.z * 0.5);
+        desiredLookAt.set(ballPos.x * 0.95, 1.2, ballPos.z * 0.6);
         break;
       }
 
