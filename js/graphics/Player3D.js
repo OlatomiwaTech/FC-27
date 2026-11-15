@@ -165,13 +165,6 @@ export class Player3D {
     this.head.castShadow = true;
     this.bodyGroup.add(this.head);
 
-    const earGeo = new THREE.SphereGeometry(0.045, 10, 8);
-    [-1, 1].forEach(side => {
-      const ear = new THREE.Mesh(earGeo, this.skinMat);
-      ear.position.set(side * 0.185, 1.83, 0);
-      this.bodyGroup.add(ear);
-    });
-
     const noseGeo = new THREE.SphereGeometry(0.045, 10, 8);
     const nose = new THREE.Mesh(noseGeo, this.skinMat);
     nose.scale.set(0.72, 0.82, 0.8);
@@ -274,14 +267,6 @@ export class Player3D {
       hair.position.y = 1.86;
       this.bodyGroup.add(hair);
     }
-    if (this.info.face?.includes('afro') || this.info.face?.includes('curly') || this.info.face?.includes('dreads')) {
-      const styleGeo = new THREE.SphereGeometry(0.19, 14, 12);
-      const style = new THREE.Mesh(styleGeo, this.hairMat);
-      style.scale.set(1.12, 0.78, 1.05);
-      style.position.set(0, 1.98, -0.015);
-      this.bodyGroup.add(style);
-    }
-
     // === ARMS ===
     const upperArmGeo = new THREE.CylinderGeometry(0.075, 0.065, 0.32, 8);
     const forearmGeo = new THREE.CylinderGeometry(0.06, 0.055, 0.28, 8);

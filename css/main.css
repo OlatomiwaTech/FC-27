@@ -265,4 +265,27 @@ kbd {
   color: #041209;
 }
 
+@media (max-width: 700px) {
+  .fc-music-widget {
+    top: 10px;
+    right: 12px;
+    gap: 6px;
+    padding: 5px 8px;
+  }
+
+  .fc-music-widget #musicPrev,
+  .fc-music-widget #musicNext {
+    display: none;
+  }
+
+  .music-meta {
+    min-width: 0;
+    max-width: 116px;
+  }
+
+  .music-track-title {
+    max-width: 116px;
+    font-size: 0.62rem;
+  }
+}
 

@@ -332,8 +332,54 @@
 }
 
 @media (max-width: 700px) {
+  .hud-scorebug {
+    top: 62px;
+    right: 12px;
+    left: 12px;
+  }
+
+  .scorebug-team {
+    flex: 1;
+    min-width: 0;
+    gap: 4px;
+    padding: 6px;
+  }
+
+  .team-badge {
+    flex: 0 0 auto;
+    padding: 4px 5px;
+    font-size: 0.64rem;
+  }
+
+  .team-title {
+    flex: 1 1 0;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+  }
+
+  .team-score {
+    min-width: 15px;
+    font-size: 1.05rem;
+  }
+
+  .scorebug-clock {
+    min-width: 48px;
+    padding: 4px 5px;
+  }
+
+  .hud-ticker {
+    top: 112px;
+    left: 12px;
+    max-width: calc(100vw - 24px);
+    gap: 7px;
+    padding: 5px 10px;
+    font-size: 0.66rem;
+  }
+
   .hud-commentary {
-    top: 116px;
+    top: 156px;
     left: 12px;
     width: calc(100vw - 24px);
     padding: 8px 11px;
