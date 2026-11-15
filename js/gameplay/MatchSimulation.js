@@ -1,12 +1,14 @@
 /**
  * FC 27 - Master Match Simulation Engine
  * Manages 3D ball physics, goal/boundary collision detection, 22 player entities,
- * input processing (passes, power shots, crosses, tackles), match clock, and officiating.
+ * input processing (passes, power shots, crosses, tackles), match clock, commentary, and officiating.
  */
 
 import { Player3D } from '../graphics/Player3D.js';
 import { Ball3D } from '../graphics/Ball3D.js';
+import { Referee3D } from '../graphics/Referee3D.js';
 import { AIController } from './AIController.js';
+import { CommentarySystem } from '../audio/CommentarySystem.js';
 import { FORMATIONS } from '../data/TeamsData.js';
 
 export class MatchSimulation {
@@ -47,6 +49,14 @@ export class MatchSimulation {
     this.activeUserPlayer = null;
     this.ball = new Ball3D(this.scene);
     this.ai = new AIController(this);
+    this.referee = new Referee3D(this.scene);
+    this.commentary = new CommentarySystem(this.sound);
+
+    // Lineup presentation state
+    this.lineupPhase = 'walkout'; // 'walkout', 'goalkeeper_cam', 'intro_done'
+    this.lineupTimer = 0;
+    this.lineupTotalDuration = 7.5; // seconds for full lineup presentation
+    this.lineupDone = false;
 
     // Callbacks for UI updates
     this.onScoreUpdate = null;
