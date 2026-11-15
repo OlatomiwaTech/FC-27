@@ -11,6 +11,7 @@ export class CommentarySystem {
     this.voice = null;
     this.enabled = true;
     this.lastSpokenTime = 0;
+    this.lastLine = '';
     this.queue = [];
     this.isSpeaking = false;
     this.onLine = null;
@@ -45,6 +46,7 @@ export class CommentarySystem {
     }
 
     this.lastSpokenTime = now;
+    this.lastLine = text;
     if (this.onLine) this.onLine(text);
     if (!this.synth) return;
 

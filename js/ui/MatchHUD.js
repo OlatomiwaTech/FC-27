@@ -252,6 +252,9 @@ export class MatchHUD {
       clearTimeout(this.commentaryTimer);
       this.commentaryTimer = setTimeout(() => commentary.classList.remove('active'), 8000);
     };
+    if (this.sim.commentary.lastLine) {
+      this.sim.onCommentary(this.sim.commentary.lastLine);
+    }
 
     this.sim.onStaminaUpdate = (stamina, playerInfo) => {
       document.getElementById('hudStaminaBar').style.width = `${stamina}%`;
