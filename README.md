@@ -39,6 +39,9 @@ Inspired by modern AAA sports titles (such as EA Sports FC), **FC 27** delivers 
 
 ### 3. Gameplay Mechanics & Physics Engine
 - **3D Ball Aerodynamics**: Realistic gravity, air drag, turf rolling friction, bounce restitution, and goalpost/crossbar collision detection with metallic ping audio.
+- **Broadcast Commentary**: Spoken match calls with readable on-screen captions for play, saves, goals, and woodwork.
+- **Goalkeepers & Goals**: Distinct keeper kits and gloves, predicted diving saves, open goal mouths, and individual net panels.
+- **Procedural Player Graphics**: Original 3D footballers with team kits, shirt numbers, varied hair, facial details, and player-scale proportions.
 - **Ball Skills & Striking**:
   - **Ground Pass / Short Pass** (`S` or `J`): Weighted distribution to targeted teammate.
   - **Through Ball** (`W` or `I`): Threading passes into running space behind defensive lines.
@@ -99,4 +102,3 @@ Inspired by modern AAA sports titles (such as EA Sports FC), **FC 27** delivers 
 
 ---
 *FC 27 Studio — Engineered with Three.js, WebGL, and Web Audio API.*
-

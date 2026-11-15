@@ -273,11 +273,11 @@ export class Stadium3D {
       roughness: 0.15
     });
 
-    const netMat = new THREE.MeshBasicMaterial({
+    const netMat = new THREE.LineBasicMaterial({
       color: 0xe2e8f0,
-      wireframe: true,
       transparent: true,
-      opacity: 0.65
+      opacity: 0.72,
+      depthWrite: false
     });
 
     // Create Goal at X = -52.5 and X = +52.5
@@ -324,10 +324,44 @@ export class Stadium3D {
       goalGroup.add(s2);
 
       // 3D Goal Net Box
-      const netGeo = new THREE.BoxGeometry(this.goalDepth, this.goalHeight, this.goalWidth, 12, 8, 16);
-      const netMesh = new THREE.Mesh(netGeo, netMat);
-      netMesh.position.set(-this.goalDepth / 2, this.goalHeight / 2, 0);
-      goalGroup.add(netMesh);
+      // Build the net as separate panels so the goal mouth stays open.
+      const netPositions = [];
+      const addSegment = (x1, y1, z1, x2, y2, z2) => {
+        netPositions.push(x1, y1, z1, x2, y2, z2);
+      };
+      const backX = -this.goalDepth;
+      const halfWidth = this.goalWidth / 2;
+      const verticalSteps = 12;
+      const horizontalSteps = 6;
+
+      for (let i = 0; i <= verticalSteps; i++) {
+        const z = -halfWidth + (this.goalWidth * i) / verticalSteps;
+        addSegment(backX, 0, z, backX, this.goalHeight, z);
+      }
+      for (let i = 0; i <= horizontalSteps; i++) {
+        const y = (this.goalHeight * i) / horizontalSteps;
+        addSegment(backX, y, -halfWidth, backX, y, halfWidth);
+      }
+
+      [-halfWidth, halfWidth].forEach(z => {
+        for (let i = 0; i <= 4; i++) {
+          const x = (-this.goalDepth * i) / 4;
+          addSegment(x, 0, z, x, this.goalHeight, z);
+        }
+        for (let i = 0; i <= horizontalSteps; i++) {
+          const y = (this.goalHeight * i) / horizontalSteps;
+          addSegment(0, y, z, backX, y, z);
+        }
+      });
+
+      for (let i = 0; i <= 4; i++) {
+        const x = (-this.goalDepth * i) / 4;
+        addSegment(x, this.goalHeight, -halfWidth, x, this.goalHeight, halfWidth);
+      }
+
+      const netGeometry = new THREE.BufferGeometry();
+      netGeometry.setAttribute('position', new THREE.Float32BufferAttribute(netPositions, 3));
+      goalGroup.add(new THREE.LineSegments(netGeometry, netMat));
 
       this.group.add(goalGroup);
     });
@@ -563,4 +597,3 @@ export class Stadium3D {
     this.group.add(this.particles);
   }
 }
-

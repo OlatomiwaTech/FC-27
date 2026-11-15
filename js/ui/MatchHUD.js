@@ -41,6 +41,11 @@ export class MatchHUD {
         <span class="ticker-text" id="hudTickerText">MATCH UNDER WAY · MERIDIAN PARK</span>
       </div>
 
+      <div class="hud-commentary" id="hudCommentary" aria-live="polite" aria-atomic="true">
+        <span class="commentary-label">LIVE COMMENTARY</span>
+        <span class="commentary-line" id="hudCommentaryLine"></span>
+      </div>
+
       <!-- Bottom Player Info & Gauges -->
       <div class="hud-player-card" id="hudPlayerCard">
         <div class="player-num-badge" id="hudPlayerNum">10</div>
@@ -240,6 +245,14 @@ export class MatchHUD {
       this.tickerTimer = setTimeout(() => ticker.classList.remove('pulse'), 2500);
     };
 
+    this.sim.onCommentary = (line) => {
+      const commentary = document.getElementById('hudCommentary');
+      document.getElementById('hudCommentaryLine').textContent = line;
+      commentary.classList.add('active');
+      clearTimeout(this.commentaryTimer);
+      this.commentaryTimer = setTimeout(() => commentary.classList.remove('active'), 8000);
+    };
+
     this.sim.onStaminaUpdate = (stamina, playerInfo) => {
       document.getElementById('hudStaminaBar').style.width = `${stamina}%`;
       if (playerInfo) {
@@ -342,7 +355,10 @@ export class MatchHUD {
   }
 
   dispose() {
+    clearTimeout(this.tickerTimer);
+    clearTimeout(this.commentaryTimer);
+    this.sim.onMatchEvent = null;
+    this.sim.onCommentary = null;
     this.container.innerHTML = '';
   }
 }
-

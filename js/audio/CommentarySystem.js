@@ -13,6 +13,7 @@ export class CommentarySystem {
     this.lastSpokenTime = 0;
     this.queue = [];
     this.isSpeaking = false;
+    this.onLine = null;
 
     this.initVoice();
   }
@@ -35,13 +36,16 @@ export class CommentarySystem {
   }
 
   speak(text, priority = 'normal', rate = 1.05, pitch = 1.05) {
-    if (!this.enabled || !this.synth) return;
+    if (!this.enabled) return;
 
     const now = performance.now();
     // Prevent overlapping spam on low-priority lines
     if (priority === 'normal' && (now - this.lastSpokenTime < 2500 || this.isSpeaking)) {
       return;
     }
+
+    if (this.onLine) this.onLine(text);
+    if (!this.synth) return;
 
     if (priority === 'high') {
       this.synth.cancel(); // Interrupt normal speech for GOAL or huge saves
@@ -175,4 +179,3 @@ export class CommentarySystem {
     }
   }
 }
-

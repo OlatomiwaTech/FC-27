@@ -47,26 +47,47 @@ export class AIController {
 
     gk.rotation = (facingDir > 0) ? Math.PI / 2 : -Math.PI / 2;
 
-    // Check if shot is incoming towards this goal
+    gk.saveCooldown = Math.max(0, (gk.saveCooldown || 0) - dt);
+
+    if (gk.pendingSave) {
+      gk.pendingSave.timeLeft -= dt;
+      if (gk.pendingSave.timeLeft <= 0) {
+        const closeToGoal = Math.abs(ball.position.x - goalX) < 2.5;
+        const closeToTarget = Math.abs(ball.position.z - gk.pendingSave.targetZ) < 2.5;
+        if (closeToGoal && closeToTarget && ball.position.y < 2.8) {
+          ball.velocity.x = facingDir * Math.max(4, Math.abs(ball.velocity.x) * 0.45);
+          ball.velocity.y = Math.max(2.2, Math.abs(ball.velocity.y) * 0.25);
+          ball.velocity.z += Math.sign(ball.position.z - gk.position.z || 1) * 2.5;
+          this.sim.sound.playPostHit();
+          this.sim.commentary.commentSave(gk.info.name);
+          this.sim.notify(`SAVE BY ${gk.info.name.toUpperCase()}!`);
+        }
+        gk.pendingSave = null;
+        gk.saveCooldown = 0.8;
+      }
+      return;
+    }
+
+    if (gk.saveCooldown > 0) return;
+
+    // Predict where an incoming shot will cross the goalkeeper's line.
     const isShotComing = (facingDir > 0 && ball.velocity.x < -10 && ball.position.x < -18) ||
                          (facingDir < 0 && ball.velocity.x > 10 && ball.position.x > 18);
 
     if (isShotComing && gk.state !== 'dive') {
-      const distToBall = gk.position.distanceTo(ball.position);
-      if (distToBall < 6.5) {
-        // Calculate dive direction
-        const diveDir = (ball.position.z > gk.position.z) ? 1 : -1;
-        gk.triggerDive(diveDir);
+      const timeToLine = (goalX - ball.position.x) / ball.velocity.x;
+      if (timeToLine >= 0 && timeToLine < 0.65) {
+        const targetZ = ball.position.z + ball.velocity.z * timeToLine;
+        const targetY = ball.position.y + ball.velocity.y * timeToLine -
+          4.905 * timeToLine * timeToLine;
+        const withinFrame = Math.abs(targetZ) < 3.5 && targetY > 0.15 && targetY < 2.8;
+        const withinReach = Math.abs(targetZ - gk.position.z) < 3.2;
 
-        // Attempt save if within reach
-        setTimeout(() => {
-          if (gk.position.distanceTo(ball.position) < 3.2 && ball.position.y < 2.6) {
-            // Parried or caught!
-            ball.velocity.set(-ball.velocity.x * 0.35, 3.5, (Math.random() - 0.5) * 8);
-            this.sim.sound.playPostHit();
-            this.sim.notify('SAVE BY THE GOALKEEPER!');
-          }
-        }, 180);
+        if (!withinFrame || !withinReach) return;
+
+        const diveDir = Math.sign(targetZ - gk.position.z) || 1;
+        gk.triggerDive(diveDir);
+        gk.pendingSave = { timeLeft: timeToLine, targetZ };
       }
     }
   }
@@ -239,4 +260,3 @@ export class AIController {
     return closest;
   }
 }
-

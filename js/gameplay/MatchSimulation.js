@@ -51,6 +51,9 @@ export class MatchSimulation {
     this.ai = new AIController(this);
     this.referee = new Referee3D(this.scene);
     this.commentary = new CommentarySystem(this.sound);
+    this.commentary.onLine = line => {
+      if (this.onCommentary) this.onCommentary(line);
+    };
 
     // Lineup presentation state
     this.lineupPhase = 'walkout'; // 'walkout', 'goalkeeper_cam', 'intro_done'
@@ -62,6 +65,7 @@ export class MatchSimulation {
     this.onScoreUpdate = null;
     this.onClockUpdate = null;
     this.onMatchEvent = null;
+    this.onCommentary = null;
     this.onStaminaUpdate = null;
     this.onPowerUpdate = null;
     this.onMatchEnd = null;
@@ -504,6 +508,7 @@ export class MatchSimulation {
           ball.velocity.z = (ball.position.z > 0 ? 6 : -6);
           this.sound.playPostHit();
           this.notify('OFF THE WOODWORK!');
+          this.commentary.commentWoodwork();
         }
         // Check Crossbar (Y = 2.44, Z between -3.66 and 3.66)
         if (Math.abs(ball.position.y - 2.44) < 0.28 && Math.abs(ball.position.z) < 3.66) {
@@ -511,6 +516,7 @@ export class MatchSimulation {
           ball.velocity.x = -ball.velocity.x * 0.7;
           this.sound.playPostHit();
           this.notify('OFF THE CROSSBAR!');
+          this.commentary.commentWoodwork();
         }
       }
     });
@@ -568,6 +574,11 @@ export class MatchSimulation {
       scorer.triggerCelebrate();
       this.notify(`GOAL! ${this.awayTeamData.name.toUpperCase()} SCORE!`);
     }
+
+    this.commentary.commentGoal(
+      scoringTeam === 'home' ? this.homeTeamData.name : this.awayTeamData.name,
+      scorer.info.name
+    );
 
     if (window.fcEngine?.cameraSystem) {
       window.fcEngine.cameraSystem.triggerCelebration(scorer);
@@ -668,4 +679,3 @@ export class MatchSimulation {
     this.ball.dispose();
   }
 }
-

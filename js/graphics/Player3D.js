@@ -1,7 +1,6 @@
 /**
  * FC 27 - 3D Player Entity & Skeletal Animation Model (Three.js)
- * Enhanced Heroic Scaling, Overhead Nameplate, Dynamic Speed Aura (User Image 3),
- * Turf Spray Particles, and Knee-Slide Celebrations.
+ * Procedural footballer models, overhead nameplates, turf spray, and animations.
  */
 
 export class Player3D {
@@ -12,8 +11,7 @@ export class Player3D {
     this.isGoalkeeper = isGoalkeeper;
 
     this.group = new THREE.Group();
-    // Scale up player to be heroic and clearly visible on pitch
-    this.group.scale.set(1.55, 1.55, 1.55);
+    this.group.scale.setScalar(this.isGoalkeeper ? 1.04 : 1);
     this.scene.add(this.group);
 
     // Gameplay state
@@ -45,7 +43,7 @@ export class Player3D {
     // Skin tones variation
     let skinHex = 0xd4a373;
     let hairHex = 0x2b1d0c;
-    if (this.info.face?.includes('black')) {
+    if (this.info.face?.includes('black') || this.info.face?.includes('dreads') || this.info.face?.includes('afro')) {
       skinHex = 0x5a3d28;
       hairHex = 0x111111;
     } else if (this.info.face?.includes('asian')) {
@@ -92,13 +90,17 @@ export class Player3D {
       color: hairHex,
       roughness: 0.85
     });
+    this.gloveMat = new THREE.MeshStandardMaterial({
+      color: this.isGoalkeeper ? 0xf2f5ee : skinHex,
+      roughness: 0.55
+    });
 
     this.bodyGroup = new THREE.Group();
     this.group.add(this.bodyGroup);
 
     // === TORSO (Athletic V-shaped upper body) ===
     // Main jersey torso — tapered athletic shape
-    const torsoGeo = new THREE.CylinderGeometry(0.22, 0.28, 0.65, 8);
+    const torsoGeo = new THREE.CylinderGeometry(0.22, 0.28, 0.65, 16);
     this.torso = new THREE.Mesh(torsoGeo, this.shirtMat);
     this.torso.position.y = 1.25;
     this.torso.castShadow = true;
@@ -118,7 +120,7 @@ export class Player3D {
     this.bodyGroup.add(backPlate);
 
     // Shoulder pads (athletic definition)
-    const shoulderGeo = new THREE.SphereGeometry(0.12, 8, 8, 0, Math.PI * 2, 0, Math.PI * 0.5);
+    const shoulderGeo = new THREE.SphereGeometry(0.12, 12, 10, 0, Math.PI * 2, 0, Math.PI * 0.5);
     const leftShoulder = new THREE.Mesh(shoulderGeo, this.shirtMat);
     leftShoulder.position.set(-0.3, 1.55, 0);
     this.bodyGroup.add(leftShoulder);
@@ -135,19 +137,32 @@ export class Player3D {
     this.bodyGroup.add(collar);
 
     // === HEAD with face features ===
-    const neckGeo = new THREE.CylinderGeometry(0.09, 0.11, 0.14, 8);
+    const neckGeo = new THREE.CylinderGeometry(0.09, 0.11, 0.14, 12);
     const neck = new THREE.Mesh(neckGeo, this.skinMat);
     neck.position.y = 1.64;
     this.bodyGroup.add(neck);
 
-    const headGeo = new THREE.SphereGeometry(0.19, 14, 14);
+    const headGeo = new THREE.SphereGeometry(0.19, 20, 16);
     this.head = new THREE.Mesh(headGeo, this.skinMat);
     this.head.position.y = 1.84;
     this.head.castShadow = true;
     this.bodyGroup.add(this.head);
 
+    const earGeo = new THREE.SphereGeometry(0.045, 10, 8);
+    [-1, 1].forEach(side => {
+      const ear = new THREE.Mesh(earGeo, this.skinMat);
+      ear.position.set(side * 0.185, 1.83, 0);
+      this.bodyGroup.add(ear);
+    });
+
+    const noseGeo = new THREE.SphereGeometry(0.045, 10, 8);
+    const nose = new THREE.Mesh(noseGeo, this.skinMat);
+    nose.scale.set(0.72, 0.82, 0.8);
+    nose.position.set(0, 1.82, 0.18);
+    this.bodyGroup.add(nose);
+
     // Face features — eyes
-    const eyeGeo = new THREE.SphereGeometry(0.032, 8, 8);
+    const eyeGeo = new THREE.SphereGeometry(0.025, 10, 8);
     const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xfafafa });
     const pupilGeo = new THREE.SphereGeometry(0.018, 8, 8);
     const pupilMat = new THREE.MeshBasicMaterial({ color: 0x1a1a1a });
@@ -174,10 +189,17 @@ export class Player3D {
     this.bodyGroup.add(mouth);
 
     // Hair cap (styled)
-    const hairGeo = new THREE.SphereGeometry(0.2, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
+    const hairGeo = new THREE.SphereGeometry(0.2, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
     const hair = new THREE.Mesh(hairGeo, this.hairMat);
     hair.position.y = 1.86;
     this.bodyGroup.add(hair);
+    if (this.info.face?.includes('afro') || this.info.face?.includes('curly') || this.info.face?.includes('dreads')) {
+      const styleGeo = new THREE.SphereGeometry(0.19, 14, 12);
+      const style = new THREE.Mesh(styleGeo, this.hairMat);
+      style.scale.set(1.12, 0.78, 1.05);
+      style.position.set(0, 1.98, -0.015);
+      this.bodyGroup.add(style);
+    }
 
     // === ARMS ===
     const upperArmGeo = new THREE.CylinderGeometry(0.075, 0.065, 0.32, 8);
@@ -193,8 +215,8 @@ export class Player3D {
     const leftForearm = new THREE.Mesh(forearmGeo, this.skinMat);
     leftForearm.position.y = -0.38;
     this.leftArm.add(leftForearm);
-    const handGeo = new THREE.SphereGeometry(0.055, 6, 6);
-    const leftHand = new THREE.Mesh(handGeo, this.skinMat);
+    const handGeo = new THREE.SphereGeometry(this.isGoalkeeper ? 0.075 : 0.055, 10, 8);
+    const leftHand = new THREE.Mesh(handGeo, this.isGoalkeeper ? this.gloveMat : this.skinMat);
     leftHand.position.y = -0.55;
     this.leftArm.add(leftHand);
     this.bodyGroup.add(this.leftArm);
@@ -209,7 +231,7 @@ export class Player3D {
     const rightForearm = new THREE.Mesh(forearmGeo, this.skinMat);
     rightForearm.position.y = -0.38;
     this.rightArm.add(rightForearm);
-    const rightHand = new THREE.Mesh(handGeo, this.skinMat);
+    const rightHand = new THREE.Mesh(handGeo, this.isGoalkeeper ? this.gloveMat : this.skinMat);
     rightHand.position.y = -0.55;
     this.rightArm.add(rightHand);
     this.bodyGroup.add(this.rightArm);
@@ -336,9 +358,10 @@ export class Player3D {
   createBoot(legGroup, side) {
     // Dual-tone football boot
     const soleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.3, metalness: 0.2 });
-    const upperMat = new THREE.MeshStandardMaterial({ 
-      color: side === 0 ? 0xff4444 : 0xff4444, // Red boot upper
-      roughness: 0.35, metalness: 0.25 
+    const upperMat = new THREE.MeshStandardMaterial({
+      color: this.teamKit.boots || 0xdce9e2,
+      roughness: 0.4,
+      metalness: 0.08
     });
 
     // Boot upper
@@ -399,7 +422,7 @@ export class Player3D {
     });
 
     this.nameplate = new THREE.Mesh(nameGeo, nameMat);
-    this.nameplate.position.set(0, 2.5, 0);
+    this.nameplate.position.set(0, 2.15, 0);
     this.nameplate.visible = false;
     this.group.add(this.nameplate);
   }
@@ -414,6 +437,7 @@ export class Player3D {
       opacity: 0.85
     });
     this.groundRing = new THREE.Mesh(ringGeo, ringMat);
+    this.groundRing.scale.setScalar(0.68);
     this.groundRing.rotation.x = -Math.PI / 2;
     this.groundRing.position.y = 0.05;
     this.groundRing.visible = false;
@@ -428,6 +452,7 @@ export class Player3D {
       opacity: 0.65
     });
     this.speedWings = new THREE.Mesh(wingGeo, wingMat);
+    this.speedWings.scale.setScalar(0.68);
     this.speedWings.rotation.x = -Math.PI / 2;
     this.speedWings.rotation.z = Math.PI * 0.65;
     this.speedWings.position.y = 0.06;
@@ -439,7 +464,7 @@ export class Player3D {
     const indMat = new THREE.MeshBasicMaterial({ color: 0x00ff87 });
     this.indicator = new THREE.Mesh(indGeo, indMat);
     this.indicator.rotation.x = Math.PI;
-    this.indicator.position.set(0, 2.8, 0);
+    this.indicator.position.set(0, 2.35, 0);
     this.indicator.visible = false;
     this.group.add(this.indicator);
   }
@@ -503,7 +528,7 @@ export class Player3D {
 
     // Active Indicator animations
     if (this.isSelected) {
-      this.indicator.position.y = 2.8 + Math.sin(this.animTime * 6) * 0.08;
+      this.indicator.position.y = 2.35 + Math.sin(this.animTime * 6) * 0.08;
       this.groundRing.rotation.z = this.animTime * 2.5;
       this.speedWings.rotation.z = this.animTime * 3.5;
       if (this.nameplate) {
