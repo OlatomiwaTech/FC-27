@@ -401,9 +401,15 @@ export class MatchSimulation {
       loft = 7.5;
       passSpeed = 19;
       this.sound.playKick(0.8);
+      this.commentary.commentCross(player.info.name);
       this.notify('CROSS DELIVERED');
+    } else if (type === 'through') {
+      this.sound.playKick(0.65);
+      this.commentary.commentThroughBall(player.info.name);
+      this.notify('THROUGH BALL');
     } else {
       this.sound.playKick(0.5);
+      this.commentary.commentPass(player.info.name);
       this.notify('PASS INTO SPACE');
     }
 
