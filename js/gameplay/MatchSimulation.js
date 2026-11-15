@@ -150,6 +150,35 @@ export class MatchSimulation {
       this.selectPlayer(kickoffPlayer);
     }
 
+    // If this is the first kickoff, run the lineup presentation
+    if (!this.lineupDone) {
+      this.matchState = 'lineup';
+      this.lineupPhase = 'walkout';
+      this.lineupTimer = 0;
+
+      // Place players in tunnel for walkout animation
+      this.homePlayers.forEach((p, idx) => {
+        p.walkoutTarget = p.position.clone();
+        p.position.set(-8 - idx * 1.2, 0, -42);
+        p.rotation = Math.PI / 2;
+      });
+      this.awayPlayers.forEach((p, idx) => {
+        p.walkoutTarget = p.position.clone();
+        p.position.set(8 + idx * 1.2, 0, -42);
+        p.rotation = Math.PI / 2;
+      });
+
+      // Trigger commentary intro
+      this.commentary.commentIntro(
+        this.homeTeamData.name,
+        this.awayTeamData.name,
+        this.stadiumData.name
+      );
+
+      this.notify(`LINEUP · ${this.homeTeamData.name.toUpperCase()} vs ${this.awayTeamData.name.toUpperCase()}`);
+      return;
+    }
+
     this.sound.playWhistle('short');
     this.notify(`KICK-OFF · ${(kickingTeam === 'home' ? this.homeTeamData.name : this.awayTeamData.name).toUpperCase()}`);
     this.matchState = 'playing';
@@ -310,6 +339,7 @@ export class MatchSimulation {
 
     this.sound.playKick(power);
     this.sound.setCrowdIntensity(0.9);
+    this.commentary.commentShot(player.info.name, power);
     this.notify(`POWER SHOT · ${player.info.name.toUpperCase()}`);
   }
 
