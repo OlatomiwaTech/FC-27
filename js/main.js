@@ -60,6 +60,11 @@ export class FC27Engine {
       slideTriggered: false,
       switchTriggered: false
     };
+    this.touchInput = {
+      up: false, down: false, left: false, right: false,
+      sprint: false,
+      shootHeld: false
+    };
 
     // 5. Game State
     this.activeMode = 'menu'; // 'menu', 'kickoff_setup', 'match', 'training_drill', 'squad', 'career', 'tournament', 'training'
@@ -228,13 +233,13 @@ export class FC27Engine {
   }
 
   updateInputState() {
-    this.input.up = this.keysDown.has('KeyW') || this.keysDown.has('ArrowUp');
-    this.input.down = this.keysDown.has('KeyS') || this.keysDown.has('ArrowDown');
-    this.input.left = this.keysDown.has('KeyA') || this.keysDown.has('ArrowLeft');
-    this.input.right = this.keysDown.has('KeyD') || this.keysDown.has('ArrowRight');
+    this.input.up = this.keysDown.has('KeyW') || this.keysDown.has('ArrowUp') || this.touchInput.up;
+    this.input.down = this.keysDown.has('KeyS') || this.keysDown.has('ArrowDown') || this.touchInput.down;
+    this.input.left = this.keysDown.has('KeyA') || this.keysDown.has('ArrowLeft') || this.touchInput.left;
+    this.input.right = this.keysDown.has('KeyD') || this.keysDown.has('ArrowRight') || this.touchInput.right;
 
-    this.input.sprint = this.keysDown.has('ShiftLeft') || this.keysDown.has('ShiftRight');
-    this.input.shootHeld = this.keysDown.has('KeyK') || this.keysDown.has('Space');
+    this.input.sprint = this.keysDown.has('ShiftLeft') || this.keysDown.has('ShiftRight') || this.touchInput.sprint;
+    this.input.shootHeld = this.keysDown.has('KeyK') || this.keysDown.has('Space') || this.touchInput.shootHeld;
 
     // Poll Gamepad
     this.pollGamepad();

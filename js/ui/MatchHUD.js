@@ -8,8 +8,11 @@ export class MatchHUD {
   constructor(container, simulation) {
     this.container = container;
     this.sim = simulation;
+    this.engine = window.fcEngine;
     this.radarCanvas = null;
     this.radarCtx = null;
+    this.pauseReturnState = 'playing';
+    this.panelReturnTo = 'pauseOverlay';
 
     this.build();
     this.bindSimulation();
@@ -252,14 +255,8 @@ export class MatchHUD {
     // Button listeners
     document.getElementById('btnResumeMatch').onclick = () => this.togglePause(false);
     document.getElementById('btnRestartMatch').onclick = () => {
-      this.togglePause(false);
-      this.sim.homeScore = 0;
-      this.sim.awayScore = 0;
-      this.sim.elapsedRealSeconds = 0;
-      this.sim.isSecondHalf = false;
-      document.getElementById('hudHomeScore').textContent = '0';
-      document.getElementById('hudAwayScore').textContent = '0';
-      this.sim.resetToKickoff('home');
+      document.getElementById('pauseOverlay').classList.add('hidden');
+      this.resetMatch();
     };
     document.getElementById('btnQuitMatch').onclick = () => {
       if (this.onQuit) this.onQuit();
@@ -270,56 +267,225 @@ export class MatchHUD {
     };
     document.getElementById('btnRematch').onclick = () => {
       document.getElementById('fulltimeOverlay').classList.add('hidden');
-      this.sim.homeScore = 0;
-      this.sim.awayScore = 0;
-      this.sim.elapsedRealSeconds = 0;
-      this.sim.isSecondHalf = false;
-      document.getElementById('hudHomeScore').textContent = '0';
-      document.getElementById('hudAwayScore').textContent = '0';
-      this.sim.resetToKickoff('home');
+      this.resetMatch();
     };
     document.getElementById('btnExitToMenu').onclick = () => {
       if (this.onQuit) this.onQuit();
     };
+    document.getElementById('btnReplay').onclick = () => this.openReplay();
+    document.getElementById('btnExitReplay').onclick = () => this.sim.stopReplay();
+    document.getElementById('btnSubstitutions').onclick = () => this.openPanel('substitutionOverlay');
+    document.getElementById('btnMatchSettings').onclick = () => this.openSettings();
+    document.getElementById('btnPausedMOTM').onclick = () => this.openMOTM('pauseOverlay');
+    document.getElementById('btnFulltimeMOTM').onclick = () => this.openMOTM('fulltimeOverlay');
+    document.getElementById('btnConfirmSubstitution').onclick = () => this.confirmSubstitution();
+    document.querySelectorAll('[data-return-pause]').forEach(button => {
+      button.onclick = () => this.returnFromPanel();
+    });
 
-    // Touch stick & action buttons
-    const passBtn = document.getElementById('touchPass');
-    const shootBtn = document.getElementById('touchShoot');
-    const sprintBtn = document.getElementById('touchSprint');
-    const switchBtn = document.getElementById('touchSwitch');
+    document.querySelectorAll('[data-action]').forEach(button => {
+      const action = button.dataset.action;
+      const held = action === 'shoot' || action === 'sprint';
+      const release = () => {
+        if (held) this.engine.touchInput[action === 'shoot' ? 'shootHeld' : 'sprint'] = false;
+      };
+      button.onpointerdown = event => {
+        event.preventDefault();
+        if (action === 'pause') {
+          this.togglePause(true);
+        } else if (held) {
+          this.engine.touchInput[action === 'shoot' ? 'shootHeld' : 'sprint'] = true;
+        } else {
+          const field = {
+            pass: 'passTriggered',
+            through: 'throughTriggered',
+            cross: 'crossTriggered',
+            skill: 'skillTriggered',
+            tackle: 'slideTriggered',
+            switch: 'switchTriggered'
+          }[action];
+          if (field) this.engine.input[field] = true;
+        }
+      };
+      button.onpointerup = release;
+      button.onpointercancel = release;
+      button.onlostpointercapture = release;
+    });
 
-    if (passBtn) {
-      passBtn.onpointerdown = (e) => {
-        e.preventDefault();
-        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS' }));
-      };
+    this.bindTouchStick();
+    document.getElementById('matchCamera').value = this.engine.cameraSystem.mode;
+    document.getElementById('matchVolume').value = this.engine.sound.volume;
+    document.getElementById('matchCommentary').checked = this.sim.commentary.enabled;
+    document.getElementById('matchAudio').checked = this.engine.sound.enabled;
+    document.getElementById('matchCamera').onchange = event => {
+      this.engine.cameraSystem.setMode(event.target.value);
+    };
+    document.getElementById('matchVolume').oninput = event => {
+      const volume = Number(event.target.value);
+      this.engine.sound.volume = volume;
+      this.engine.music.setVolume(volume);
+    };
+    document.getElementById('matchCommentary').onchange = event => {
+      this.sim.commentary.enabled = event.target.checked;
+    };
+    document.getElementById('matchAudio').onchange = event => {
+      this.engine.sound.enabled = event.target.checked;
+    };
+    this.renderSubstitutionOptions();
+
+    this.sim.onReplayProgress = progress => {
+      document.getElementById('replayProgressBar').style.width =
+        `${Math.min(100, progress * 100)}%`;
+    };
+    this.sim.onReplayEnd = () => {
+      document.getElementById('replayOverlay').classList.add('hidden');
+      document.getElementById('pauseOverlay').classList.remove('hidden');
+    };
+  }
+
+  bindTouchStick() {
+    const stick = document.getElementById('touchStick');
+    const nub = document.getElementById('touchNub');
+    const touch = this.engine.touchInput;
+    const update = event => {
+      const rect = stick.getBoundingClientRect();
+      const radius = Math.min(rect.width, rect.height) * 0.36;
+      let x = event.clientX - (rect.left + rect.width / 2);
+      let y = event.clientY - (rect.top + rect.height / 2);
+      const length = Math.hypot(x, y);
+      if (length > radius) {
+        x = x / length * radius;
+        y = y / length * radius;
+      }
+      nub.style.transform = `translate(${x}px, ${y}px)`;
+      touch.left = x < -radius * 0.2;
+      touch.right = x > radius * 0.2;
+      touch.up = y < -radius * 0.2;
+      touch.down = y > radius * 0.2;
+    };
+    const release = () => {
+      touch.left = touch.right = touch.up = touch.down = false;
+      nub.style.transform = 'translate(0, 0)';
+    };
+    stick.onpointerdown = event => {
+      event.preventDefault();
+      stick.setPointerCapture(event.pointerId);
+      update(event);
+    };
+    stick.onpointermove = event => {
+      if (stick.hasPointerCapture(event.pointerId)) update(event);
+    };
+    stick.onpointerup = release;
+    stick.onpointercancel = release;
+  }
+
+  openPanel(id) {
+    document.getElementById('pauseOverlay').classList.add('hidden');
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  returnFromPanel() {
+    document.querySelectorAll('#replayOverlay, #substitutionOverlay, #matchSettingsOverlay, #motmOverlay')
+      .forEach(overlay => overlay.classList.add('hidden'));
+    document.getElementById(this.panelReturnTo).classList.remove('hidden');
+  }
+
+  openSettings() {
+    document.getElementById('matchCamera').value = this.engine.cameraSystem.mode;
+    document.getElementById('matchVolume').value = this.engine.sound.volume;
+    this.panelReturnTo = 'pauseOverlay';
+    this.openPanel('matchSettingsOverlay');
+  }
+
+  openReplay() {
+    if (!this.sim.startReplay()) {
+      document.getElementById('hudTickerText').textContent =
+        'REPLAY UNAVAILABLE · PLAY A LITTLE LONGER FIRST';
+      return;
     }
-    if (shootBtn) {
-      shootBtn.onpointerdown = (e) => {
-        e.preventDefault();
-        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }));
-      };
-      shootBtn.onpointerup = (e) => {
-        e.preventDefault();
-        window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyD' }));
-      };
+    document.getElementById('replayProgressBar').style.width = '0%';
+    document.getElementById('replayOverlay').classList.remove('hidden');
+    document.getElementById('pauseOverlay').classList.add('hidden');
+  }
+
+  renderSubstitutionOptions() {
+    const outgoing = document.getElementById('subOutgoing');
+    const incoming = document.getElementById('subIncoming');
+    outgoing.replaceChildren();
+    incoming.replaceChildren();
+    this.sim.homePlayers.forEach(player => {
+      const option = document.createElement('option');
+      option.value = player.info.num;
+      option.textContent = `#${player.info.num} ${player.info.name} · ${player.info.role}`;
+      outgoing.appendChild(option);
+    });
+    this.sim.homeBench.forEach(player => {
+      const option = document.createElement('option');
+      option.value = player.num;
+      option.textContent = `#${player.num} ${player.name} · ${player.role}`;
+      incoming.appendChild(option);
+    });
+
+    document.getElementById('substitutionCount').textContent =
+      `${this.sim.substitutionsUsed} of 5 substitutions used · ${this.sim.homeBench.length} on the bench`;
+    document.getElementById('btnConfirmSubstitution').disabled =
+      this.sim.substitutionsUsed >= 5 || this.sim.homeBench.length === 0;
+  }
+
+  confirmSubstitution() {
+    const outgoing = Number(document.getElementById('subOutgoing').value);
+    const incoming = Number(document.getElementById('subIncoming').value);
+    const result = this.sim.performSubstitution(outgoing, incoming);
+    document.getElementById('substitutionMessage').textContent = result.message;
+    if (result.success) this.renderSubstitutionOptions();
+  }
+
+  openMOTM(returnTo) {
+    this.panelReturnTo = returnTo;
+    const result = this.sim.getPlayerOfMatch();
+    document.getElementById('motmStatus').textContent =
+      this.sim.matchState === 'fulltime' ? 'FULL-TIME AWARD' : 'PROVISIONAL LEADER';
+    if (result) {
+      const { player, stats, rating } = result;
+      document.getElementById('motmRating').textContent = rating.toFixed(1);
+      document.getElementById('motmName').textContent =
+        `#${player.info.num} ${player.info.name}`;
+      const team = player.teamData?.name || '';
+      document.getElementById('motmDetails').textContent =
+        `${team} · ${player.info.role}`;
+      document.getElementById('motmStats').textContent =
+        `${stats.goals || 0} goals · ${stats.assists || 0} assists · ` +
+        `${stats.saves || 0} saves · ${stats.tackles || 0} tackles · ` +
+        `${stats.shots || 0} shots`;
     }
-    if (sprintBtn) {
-      sprintBtn.onpointerdown = (e) => {
-        e.preventDefault();
-        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'ShiftLeft' }));
-      };
-      sprintBtn.onpointerup = (e) => {
-        e.preventDefault();
-        window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ShiftLeft' }));
-      };
-    }
-    if (switchBtn) {
-      switchBtn.onpointerdown = (e) => {
-        e.preventDefault();
-        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ' }));
-      };
-    }
+    document.getElementById('pauseOverlay').classList.add('hidden');
+    document.getElementById('fulltimeOverlay').classList.add('hidden');
+    document.getElementById('motmOverlay').classList.remove('hidden');
+  }
+
+  resetMatch() {
+    this.sim.homeScore = 0;
+    this.sim.awayScore = 0;
+    this.sim.homeShots = 0;
+    this.sim.awayShots = 0;
+    this.sim.homePossessionTime = 0;
+    this.sim.awayPossessionTime = 0;
+    this.sim.elapsedRealSeconds = 0;
+    this.sim.isSecondHalf = false;
+    this.sim.lineupDone = true;
+    this.sim.homeRoster = this.sim.homeTeamData.roster.slice(0, 11);
+    this.sim.homeBench = (this.sim.homeTeamData.subs || []).slice();
+    this.sim.substitutionsUsed = 0;
+    this.sim.playerMatchStats.clear();
+    this.sim.replayFrames = [];
+    this.sim.replayTime = 0;
+    this.sim.replayAccumulator = 0;
+    this.sim.initTeams();
+    this.renderSubstitutionOptions();
+    document.getElementById('hudHomeScore').textContent = '0';
+    document.getElementById('hudAwayScore').textContent = '0';
+    document.getElementById('hudClock').textContent = "00'";
+    document.getElementById('hudPeriod').textContent = '1ST HALF';
   }
 
   bindSimulation() {
@@ -385,13 +551,21 @@ export class MatchHUD {
   }
 
   togglePause(show) {
-    const overlay = document.getElementById('pauseOverlay');
+    const overlays = document.querySelectorAll(
+      '#pauseOverlay, #replayOverlay, #substitutionOverlay, #matchSettingsOverlay, #motmOverlay'
+    );
+    if (this.sim.isReplaying) {
+      this.sim.stopReplay();
+      return;
+    }
     if (show) {
-      overlay.classList.remove('hidden');
+      if (this.sim.matchState !== 'paused') this.pauseReturnState = this.sim.matchState;
+      overlays.forEach(overlay => overlay.classList.add('hidden'));
+      document.getElementById('pauseOverlay').classList.remove('hidden');
       this.sim.matchState = 'paused';
     } else {
-      overlay.classList.add('hidden');
-      this.sim.matchState = 'playing';
+      overlays.forEach(overlay => overlay.classList.add('hidden'));
+      this.sim.matchState = this.pauseReturnState || 'playing';
     }
   }
 
