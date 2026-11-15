@@ -37,9 +37,13 @@ export class Stadium3D {
   }
 
   createLights() {
-    // Master Stadium Floodlight Sunlight
-    const mainSun = new THREE.DirectionalLight(0xffffff, 2.4);
-    mainSun.position.set(15, 65, 30);
+    // Deep dark night sky background
+    this.scene.background = new THREE.Color(this.data.skyColor || 0x091422);
+    this.scene.fog = new THREE.FogExp2(this.data.fogColor || 0x0c1b2c, 0.008);
+
+    // Main Directional "Sun" — simulates broadcast TV key light, warm-white
+    const mainSun = new THREE.DirectionalLight(0xffeedd, 1.35);
+    mainSun.position.set(15, 55, 30);
     mainSun.castShadow = true;
     mainSun.shadow.mapSize.width = 2048;
     mainSun.shadow.mapSize.height = 2048;
@@ -52,12 +56,12 @@ export class Stadium3D {
     mainSun.shadow.bias = -0.0005;
     this.group.add(mainSun);
 
-    // Bright Ambient Fill
-    const ambient = new THREE.AmbientLight(0xffffff, 1.4);
+    // Low-intensity cool blue ambient — gives depth and contrast in shadows
+    const ambient = new THREE.AmbientLight(0x334460, 0.55);
     this.group.add(ambient);
 
-    // Hemispheric sky-to-ground bounce
-    const hemi = new THREE.HemisphereLight(0xd9e8ff, 0x1e3a1f, 0.8);
+    // Hemispheric sky/ground bounce — dark blue sky, dark green turf bounce
+    const hemi = new THREE.HemisphereLight(0x1a2a44, 0x0d2610, 0.4);
     hemi.position.set(0, 40, 0);
     this.group.add(hemi);
 
@@ -69,14 +73,15 @@ export class Stadium3D {
       [65, 32, 45]
     ];
 
-    towerCoords.forEach((pos, idx) => {
-      // Light source
-      const spot = new THREE.SpotLight(this.data.floodlightColor || 0xedf4ff, 2.8);
+    towerCoords.forEach((pos) => {
+      // Focused floodlight spot with tight penumbra for dramatic contrast
+      const spot = new THREE.SpotLight(this.data.floodlightColor || 0xedf4ff, 1.6);
       spot.position.set(pos[0], pos[1], pos[2]);
-      spot.target.position.set(pos[0] * 0.2, 0, pos[2] * 0.2);
-      spot.angle = Math.PI / 4.2;
-      spot.penumbra = 0.55;
-      spot.distance = 180;
+      spot.target.position.set(pos[0] * 0.15, 0, pos[2] * 0.15);
+      spot.angle = Math.PI / 4.5;
+      spot.penumbra = 0.65;
+      spot.distance = 160;
+      spot.decay = 1.2;
       spot.castShadow = true;
       spot.shadow.mapSize.width = 1024;
       spot.shadow.mapSize.height = 1024;
@@ -101,7 +106,7 @@ export class Stadium3D {
       head.lookAt(0, 0, 0);
       this.group.add(head);
 
-      // Glowing lens bank
+      // Glowing lens bank — emissive white glow
       const lensGeo = new THREE.PlaneGeometry(4.2, 3.2);
       const lensMat = new THREE.MeshBasicMaterial({
         color: 0xffffff,
