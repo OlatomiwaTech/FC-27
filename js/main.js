@@ -273,6 +273,10 @@ export class FC27Engine {
         this.currentSimulation.dispose();
         this.currentSimulation = null;
       }
+      if (this.currentDrillSim) {
+        this.currentDrillSim.dispose();
+        this.currentDrillSim = null;
+      }
       this.initRouter();
     }
     else if (mode === 'kickoff_setup') {
@@ -329,6 +333,11 @@ export class FC27Engine {
     const camMode = this.menuManager ? this.menuManager.settings.camera : 'broadcast';
     this.cameraSystem.setMode(camMode);
 
+    // Start royalty-free stadium soundtrack music if not running
+    if (this.music && !this.music.isPlaying) {
+      this.music.start();
+    }
+
     // Initialize 3D Match Simulation
     this.currentSimulation = new MatchSimulation(this.scene, this.sound, {
       homeTeam,
@@ -347,21 +356,36 @@ export class FC27Engine {
   }
 
   startTrainingDrill(drillMode, team) {
-    this.activeMode = 'match';
+    this.activeMode = 'training_drill';
     this.uiContainer.innerHTML = '';
-    this.cameraSystem.setMode('broadcast');
 
-    this.currentSimulation = new MatchSimulation(this.scene, this.sound, {
-      homeTeam: team,
-      awayTeam: TEAMS[1],
-      stadium: STADIUMS[0],
-      duration: 10,
-      difficulty: 'standard'
-    });
+    if (this.currentSimulation) {
+      this.currentSimulation.dispose();
+      this.currentSimulation = null;
+    }
+    if (this.currentDrillSim) {
+      this.currentDrillSim.dispose();
+      this.currentDrillSim = null;
+    }
 
-    this.currentHUD = new MatchHUD(this.uiContainer, this.currentSimulation);
-    this.currentHUD.onQuit = () => this.navigateTo('menu');
-    this.currentSimulation.notify(`TRAINING DRILL · ${drillMode.toUpperCase()}`);
+    // Start royalty-free stadium soundtrack
+    if (this.music && !this.music.isPlaying) {
+      this.music.start();
+    }
+
+    if (drillMode === 'free_kick') {
+      this.cameraSystem.setMode('tele');
+      this.currentDrillSim = new TrainingDrillSimulation(this.scene, this.sound, 'free_kick', team, TEAMS[1]);
+      this.currentDrillHUD = new TrainingHUD(this.uiContainer, this.currentDrillSim, () => this.navigateTo('training'));
+    } else if (drillMode === 'penalty') {
+      this.cameraSystem.setMode('tele');
+      this.currentDrillSim = new TrainingDrillSimulation(this.scene, this.sound, 'penalty', team, TEAMS[1]);
+      this.currentDrillHUD = new TrainingHUD(this.uiContainer, this.currentDrillSim, () => this.navigateTo('training'));
+    } else {
+      this.cameraSystem.setMode('broadcast');
+      this.currentDrillSim = new TrainingDrillSimulation(this.scene, this.sound, '1v1', team, TEAMS[1]);
+      this.currentDrillHUD = new TrainingHUD(this.uiContainer, this.currentDrillSim, () => this.navigateTo('training'));
+    }
   }
 
   handleResize() {
@@ -397,6 +421,15 @@ export class FC27Engine {
       if (this.currentHUD) {
         this.currentHUD.updateRadar();
       }
+    } else if (this.activeMode === 'training_drill' && this.currentDrillSim) {
+      this.currentDrillSim.update(dt, this.input);
+
+      // Camera follows the drill ball and striker
+      this.cameraSystem.update(
+        dt,
+        this.currentDrillSim.ball.position,
+        this.currentDrillSim.striker
+      );
     } else {
       // Cinematic orbit around stadium in menu modes
       this.cameraSystem.update(dt, new THREE.Vector3(0, 0, 0), null);
