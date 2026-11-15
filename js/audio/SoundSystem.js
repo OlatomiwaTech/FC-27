@@ -235,6 +235,25 @@ export class SoundSystem {
     } catch {}
   }
 
+  playSave() {
+    if (!this.enabled) return;
+    this.ensureContext();
+    if (!this.ctx) return;
+
+    const now = this.ctx.currentTime;
+    const impact = this.ctx.createOscillator();
+    const impactGain = this.ctx.createGain();
+    impact.type = 'sine';
+    impact.frequency.setValueAtTime(115, now);
+    impact.frequency.exponentialRampToValueAtTime(48, now + 0.13);
+    impactGain.gain.setValueAtTime(0.28 * this.volume, now);
+    impactGain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+    impact.connect(impactGain);
+    impactGain.connect(this.ctx.destination);
+    impact.start(now);
+    impact.stop(now + 0.16);
+  }
+
   playNetRustle() {
     if (!this.enabled) return;
     this.ensureContext();
@@ -334,4 +353,3 @@ export class SoundSystem {
     } catch {}
   }
 }
-
