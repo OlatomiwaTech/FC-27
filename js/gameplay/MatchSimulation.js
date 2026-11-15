@@ -722,6 +722,7 @@ export class MatchSimulation {
       return;
     }
     if (this.matchState === 'paused') return;
+    if (this.matchState === 'halftime' || this.matchState === 'fulltime') return;
     if (this.matchState === 'goal_celebration') {
       this.goalCelebrationTimer -= dt;
       this.ball.update(dt);

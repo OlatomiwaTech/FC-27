@@ -130,11 +130,12 @@ export class MenuManager {
           <div class="controls-legend">
             <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span>
             <span><kbd>SHIFT</kbd> SPRINT</span>
-            <span><kbd>S</kbd> / <kbd>J</kbd> PASS</span>
-            <span><kbd>D</kbd> / <kbd>K</kbd> SHOOT</span>
-            <span><kbd>W</kbd> / <kbd>I</kbd> THROUGH BALL</span>
-            <span><kbd>A</kbd> / <kbd>L</kbd> CROSS</span>
-            <span><kbd>SPACE</kbd> TACKLE</span>
+            <span><kbd>J</kbd> PASS</span>
+            <span><kbd>K</kbd> / <kbd>SPACE</kbd> SHOOT</span>
+            <span><kbd>I</kbd> THROUGH BALL</span>
+            <span><kbd>L</kbd> CROSS</span>
+            <span><kbd>F</kbd> SKILL</span>
+            <span><kbd>E</kbd> TACKLE</span>
             <span><kbd>Q</kbd> SWITCH</span>
           </div>
           <div class="controller-tag">🎮 GAMEPAD ENABLED</div>
@@ -180,7 +181,7 @@ export class MenuManager {
                   <div><strong>Shoot (Charge):</strong> K / Space / Gamepad B</div>
                   <div><strong>Lob / Cross:</strong> L / Gamepad X</div>
                   <div><strong>Skill Move:</strong> F / Gamepad RB (while carrying)</div>
-                  <div><strong>Standing / Slide Tackle:</strong> J / E / Gamepad X</div>
+                  <div><strong>Standing / Slide Tackle:</strong> J / E / Gamepad X (contextual)</div>
                   <div><strong>Switch Player:</strong> Q / Tab / Gamepad LB</div>
                   <div><strong>Pause Match:</strong> ESC / Start Button</div>
                 </div>
