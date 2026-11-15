@@ -325,13 +325,23 @@ export class MatchSimulation {
     const moveZ = (input.down ? 1 : 0) - (input.up ? 1 : 0);
     const moveLen = Math.hypot(moveX, moveZ);
 
+    if (input.skillTriggered && hasBall && player.stamina >= 12 && player.triggerSkill()) {
+      const skillDir = moveLen > 0.05
+        ? new THREE.Vector3(moveX / moveLen, 0, moveZ / moveLen)
+        : new THREE.Vector3(Math.sin(player.rotation), 0, Math.cos(player.rotation));
+      player.position.addScaledVector(skillDir, 0.8);
+      player.stamina -= 12;
+      this.sound.playUIClick();
+      this.notify(`${player.info.name.toUpperCase()} BEATS THE DEFENDER`);
+    }
+
     if (moveLen > 0.05) {
       const dirX = moveX / moveLen;
       const dirZ = moveZ / moveLen;
 
       // Sprint logic
       const isSprinting = input.sprint && player.stamina > 5;
-      const maxSpeed = isSprinting ? 9.2 : 6.0;
+      const maxSpeed = player.skillBurst > 0 ? 11 : isSprinting ? 9.2 : 6.0;
 
       player.velocity.set(dirX * maxSpeed, 0, dirZ * maxSpeed);
       player.position.x += dirX * maxSpeed * dt;
@@ -658,6 +668,7 @@ export class MatchSimulation {
   }
 
   triggerSave(gk, isSpectacular = false) {
+    this.recordPlayerStat(gk, 'saves');
     gk.triggerDive(this.ball.velocity.x > 0 ? -1 : 1, this.ball.velocity.z > 0 ? 1 : -1);
     this.sound.playSave();
     this.commentary.commentSave(gk.info.name);

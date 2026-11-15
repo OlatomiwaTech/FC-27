@@ -26,6 +26,9 @@ export class Player3D {
     this.animTime = Math.random() * 10;
     this.kickProgress = 0;
     this.tackleProgress = 0;
+    this.skillProgress = 0;
+    this.skillCooldown = 0;
+    this.skillBurst = 0;
     this.diveProgress = 0;
     this.celebrateProgress = 0;
     this.diveDirection = 1; // 1 for right, -1 for left
@@ -574,6 +577,15 @@ export class Player3D {
     this.tackleProgress = 1.0;
   }
 
+  triggerSkill() {
+    if (this.skillCooldown > 0) return false;
+    this.state = 'skill';
+    this.skillProgress = 1;
+    this.skillCooldown = 2.5;
+    this.skillBurst = 0.55;
+    return true;
+  }
+
   triggerDive(direction = 1) {
     this.state = 'dive';
     this.diveProgress = 1.0;
@@ -587,6 +599,8 @@ export class Player3D {
 
   update(dt) {
     this.animTime += dt;
+    this.skillCooldown = Math.max(0, this.skillCooldown - dt);
+    this.skillBurst = Math.max(0, this.skillBurst - dt);
 
     // Sync group position
     this.group.position.copy(this.position);
@@ -604,6 +618,23 @@ export class Player3D {
     }
 
     const currentSpeed = this.velocity.length();
+
+    if (this.skillProgress > 0) {
+      this.skillProgress = Math.max(0, this.skillProgress - dt * 2.8);
+      const feint = Math.sin((1 - this.skillProgress) * Math.PI);
+      this.bodyGroup.rotation.y = Math.sin((1 - this.skillProgress) * Math.PI * 2) * 0.55;
+      this.torso.rotation.z = feint * 0.2;
+      this.leftLeg.rotation.x = feint * 0.8;
+      this.rightLeg.rotation.x = -feint * 0.8;
+      this.leftArm.rotation.z = feint * 0.45;
+      this.rightArm.rotation.z = -feint * 0.45;
+      if (this.skillProgress === 0) {
+        this.resetLimbs();
+        this.bodyGroup.rotation.set(0, 0, 0);
+        this.state = 'idle';
+      }
+      return;
+    }
 
     // Turf kick-up particles when sprinting or tackling
     if (currentSpeed > 6.5 || this.tackleProgress > 0) {
