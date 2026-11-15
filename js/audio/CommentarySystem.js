@@ -44,6 +44,7 @@ export class CommentarySystem {
       return;
     }
 
+    this.lastSpokenTime = now;
     if (this.onLine) this.onLine(text);
     if (!this.synth) return;
 
@@ -59,7 +60,6 @@ export class CommentarySystem {
       utter.volume = 1.0;
 
       this.isSpeaking = true;
-      this.lastSpokenTime = now;
 
       utter.onend = () => {
         this.isSpeaking = false;
