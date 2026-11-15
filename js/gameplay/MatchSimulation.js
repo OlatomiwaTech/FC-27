@@ -5,6 +5,7 @@
  */
 
 import { Player3D } from '../graphics/Player3D.js';
+import { Goalkeeper3D } from '../graphics/Goalkeeper3D.js';
 import { Ball3D } from '../graphics/Ball3D.js';
 import { Referee3D } from '../graphics/Referee3D.js';
 import { AIController } from './AIController.js';
@@ -88,9 +89,12 @@ export class MatchSimulation {
     this.homeTeamData.roster.slice(0, 11).forEach((info, idx) => {
       const isGK = idx === 0;
       const kit = isGK ? (this.homeTeamData.gkKit || this.homeTeamData.homeKit) : this.homeTeamData.homeKit;
-      const player = new Player3D(this.scene, info, kit, isGK);
+      const player = isGK
+        ? new Goalkeeper3D(this.scene, info, kit)
+        : new Player3D(this.scene, info, kit, false);
       player.team = 'home';
       player.teamData = this.homeTeamData;
+      player.isGoalkeeper = isGK;
 
       // Base formation coordinates (mapped from 0..105, 0..68 to -52.5..52.5, -34..34)
       const formCoord = homeForm.home[idx].pos;
@@ -106,9 +110,12 @@ export class MatchSimulation {
     this.awayTeamData.roster.slice(0, 11).forEach((info, idx) => {
       const isGK = idx === 0;
       const kit = isGK ? (this.awayTeamData.gkKit || this.awayTeamData.awayKit) : this.awayTeamData.awayKit;
-      const player = new Player3D(this.scene, info, kit, isGK);
+      const player = isGK
+        ? new Goalkeeper3D(this.scene, info, kit)
+        : new Player3D(this.scene, info, kit, false);
       player.team = 'away';
       player.teamData = this.awayTeamData;
+      player.isGoalkeeper = isGK;
 
       const formCoord = awayForm.home[idx].pos;
       // Mirror X and Z for opponent
@@ -556,6 +563,16 @@ export class MatchSimulation {
     }
   }
 
+  triggerSave(gk, isSpectacular = false) {
+    gk.triggerDive(this.ball.velocity.x > 0 ? -1 : 1, this.ball.velocity.z > 0 ? 1 : -1);
+    this.sound.playSave();
+    this.commentary.commentSave(gk.info.name);
+    if (isSpectacular) {
+      this.commentary.commentGreatSave(gk.info.name, true);
+    }
+    this.notify(`SAVE! ${gk.info.name.toUpperCase()}`);
+  }
+
   triggerGoal(scoringTeam) {
     this.matchState = 'goal_celebration';
     this.sound.playNetRustle();
@@ -619,6 +636,7 @@ export class MatchSimulation {
       this.isSecondHalf = true;
       this.matchState = 'halftime';
       this.sound.playWhistle('triple');
+      this.commentary.commentHalfTime(this.homeScore, this.awayScore);
       this.notify('HALF TIME · TEAMS HEAD TO THE DRESSING ROOMS');
       return;
     }
@@ -628,6 +646,9 @@ export class MatchSimulation {
       this.matchState = 'fulltime';
       this.sound.playWhistle('triple');
       this.notify('FULL TIME · THE FINAL WHISTLE BLOWS');
+      const winner = this.homeScore > this.awayScore ? this.homeTeamData.name :
+                     this.awayScore > this.homeScore ? this.awayTeamData.name : "nobody";
+      this.commentary.commentFullTime(winner, this.homeScore, this.awayScore);
       if (this.onMatchEnd) {
         const totalPoss = this.homePossessionTime + this.awayPossessionTime || 1;
         const homePossPct = Math.round((this.homePossessionTime / totalPoss) * 100);

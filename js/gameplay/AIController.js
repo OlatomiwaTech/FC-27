@@ -54,13 +54,31 @@ export class AIController {
       if (gk.pendingSave.timeLeft <= 0) {
         const closeToGoal = Math.abs(ball.position.x - goalX) < 2.5;
         const closeToTarget = Math.abs(ball.position.z - gk.pendingSave.targetZ) < 2.5;
-        if (closeToGoal && closeToTarget && ball.position.y < 2.8) {
-          ball.velocity.x = facingDir * Math.max(4, Math.abs(ball.velocity.x) * 0.45);
-          ball.velocity.y = Math.max(2.2, Math.abs(ball.velocity.y) * 0.25);
-          ball.velocity.z += Math.sign(ball.position.z - gk.position.z || 1) * 2.5;
-          this.sim.sound.playPostHit();
+        const saveSuccess = closeToGoal && closeToTarget && ball.position.y < 2.8;
+        
+        if (saveSuccess) {
+          // Successful save
+          if (gk.pendingSave.type === 'catch' && Math.random() < 0.6) {
+            // Caught - GK holds ball
+            if (gk.triggerCatch) {
+              gk.triggerCatch();
+            }
+            gk.isHoldingBall = true;
+            ball.velocity.set(0, 0, 0);
+            ball.position.set(gk.position.x, 0.5, gk.position.z);
+            ball.owner = gk;
+          } else {
+            // Parried away
+            ball.velocity.x = facingDir * Math.max(4, Math.abs(ball.velocity.x) * 0.45);
+            ball.velocity.y = Math.max(2.2, Math.abs(ball.velocity.y) * 0.25);
+            ball.velocity.z += Math.sign(ball.position.z - gk.position.z || 1) * 2.5;
+          }
+          this.sim.sound.playSave();
           this.sim.commentary.commentSave(gk.info.name);
           this.sim.notify(`SAVE BY ${gk.info.name.toUpperCase()}!`);
+        } else {
+          this.sim.sound.playPostHit();
+          this.sim.notify('SHOT PAST THE KEEPER!');
         }
         gk.pendingSave = null;
         gk.saveCooldown = 0.8;
@@ -86,9 +104,34 @@ export class AIController {
         if (!withinFrame || !withinReach) return;
 
         const diveDir = Math.sign(targetZ - gk.position.z) || 1;
-        gk.triggerDive(diveDir);
-        gk.pendingSave = { timeLeft: timeToLine, targetZ };
+        const diveDirX = facingDir > 0 ? 1 : -1;
+        
+        // Determine save type based on ball height
+        if (targetY > 2.0 || ball.velocity.y > 5) {
+          // High shot - punch away
+          gk.triggerPunch();
+          gk.pendingSave = { timeLeft: timeToLine, targetZ, type: 'punch' };
+        } else if (targetY > 0.8) {
+          // Medium height - dive and catch
+          gk.triggerDive(diveDir, diveDirX);
+          gk.pendingSave = { timeLeft: timeToLine, targetZ, type: 'catch' };
+        } else {
+          // Low shot - dive
+          gk.triggerDive(diveDir, diveDirX);
+          gk.pendingSave = { timeLeft: timeToLine, targetZ, type: 'dive' };
+        }
       }
+    }
+    
+    // If GK is holding ball, allow throw/clear
+    if (gk.isHoldingBall && Math.random() < dt * 0.5) {
+      if (gk.triggerThrow) {
+        gk.triggerThrow();
+      }
+      gk.isHoldingBall = false;
+      ball.owner = null;
+      ball.velocity.set((facingDir > 0 ? -1 : 1) * 18, 4.5, (Math.random() - 0.5) * 8);
+      this.sim.sound.playKick(0.6);
     }
   }
 
