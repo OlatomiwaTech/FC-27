@@ -82,15 +82,18 @@ export class MatchHUD {
         </div>
       </div>
       <div class="hud-action-dock" id="matchActionDock" aria-label="Match controls">
-        <button class="match-action" data-action="switch" title="Switch player (Q)">SWITCH <kbd>Q</kbd></button>
-        <button class="match-action" data-action="tackle" title="Tackle (E)">TACKLE <kbd>E</kbd></button>
         <button class="match-action" data-action="skill" title="Skill move (F)">SKILL <kbd>F</kbd></button>
         <button class="match-action" data-action="sprint" title="Sprint (hold Shift)">SPRINT <kbd>⇧</kbd></button>
-        <button class="match-action" data-action="cross" title="Cross (L)">CROSS <kbd>L</kbd></button>
         <button class="match-action" data-action="through" title="Through ball (I)">THROUGH <kbd>I</kbd></button>
         <button class="match-action" data-action="pass" title="Pass (J)">PASS <kbd>J</kbd></button>
         <button class="match-action primary" data-action="shoot" title="Shoot (hold K or Space)">SHOOT <kbd>K</kbd></button>
-        <button class="match-action pause" data-action="pause" title="Pause match (Esc)">PAUSE <kbd>Esc</kbd></button>
+        <button class="match-action touch-combo" data-action="skillSprint" title="Sprint and perform a skill move">SPRINT<br>&amp; SKILL</button>
+        <div class="match-action-secondary" aria-label="More match controls">
+          <button class="match-action" data-action="cross" title="Cross (L)">CROSS <kbd>L</kbd></button>
+          <button class="match-action" data-action="pause" title="Pause match (Esc)">PAUSE <kbd>Esc</kbd></button>
+          <button class="match-action" data-action="tackle" title="Tackle (E)">TACKLE <kbd>E</kbd></button>
+          <button class="match-action" data-action="switch" title="Switch player (Q)">SWITCH <kbd>Q</kbd></button>
+        </div>
       </div>
 
       <!-- Pause Menu Overlay -->
@@ -285,7 +288,7 @@ export class MatchHUD {
 
     document.querySelectorAll('[data-action]').forEach(button => {
       const action = button.dataset.action;
-      const held = action === 'shoot' || action === 'sprint';
+      const held = action === 'shoot' || action === 'sprint' || action === 'skillSprint';
       const release = () => {
         if (held) this.engine.touchInput[action === 'shoot' ? 'shootHeld' : 'sprint'] = false;
       };
@@ -295,6 +298,7 @@ export class MatchHUD {
           this.togglePause(true);
         } else if (held) {
           this.engine.touchInput[action === 'shoot' ? 'shootHeld' : 'sprint'] = true;
+          if (action === 'skillSprint') this.engine.input.skillTriggered = true;
         } else {
           const field = {
             pass: 'passTriggered',
