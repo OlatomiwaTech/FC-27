@@ -73,7 +73,8 @@ export class MatchSimulation {
     // Spawn 11 Home Players
     this.homeTeamData.roster.slice(0, 11).forEach((info, idx) => {
       const isGK = idx === 0;
-      const player = new Player3D(this.scene, info, this.homeTeamData.homeKit, isGK);
+      const kit = isGK ? (this.homeTeamData.gkKit || this.homeTeamData.homeKit) : this.homeTeamData.homeKit;
+      const player = new Player3D(this.scene, info, kit, isGK);
       player.team = 'home';
       player.teamData = this.homeTeamData;
 
@@ -90,7 +91,8 @@ export class MatchSimulation {
     // Spawn 11 Away Players (mirrored onto positive X side)
     this.awayTeamData.roster.slice(0, 11).forEach((info, idx) => {
       const isGK = idx === 0;
-      const player = new Player3D(this.scene, info, this.awayTeamData.awayKit, isGK);
+      const kit = isGK ? (this.awayTeamData.gkKit || this.awayTeamData.awayKit) : this.awayTeamData.awayKit;
+      const player = new Player3D(this.scene, info, kit, isGK);
       player.team = 'away';
       player.teamData = this.awayTeamData;
 
