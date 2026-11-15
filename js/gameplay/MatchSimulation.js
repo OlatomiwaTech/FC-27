@@ -21,6 +21,16 @@ export class MatchSimulation {
     this.homeTeamData = options.homeTeam;
     this.awayTeamData = options.awayTeam;
     this.stadiumData = options.stadium;
+    this.homeRoster = this.homeTeamData.roster.slice(0, 11);
+    this.homeBench = (this.homeTeamData.subs || []).slice();
+    this.substitutionsUsed = 0;
+    this.playerMatchStats = new Map();
+    this.allMatchPlayers = new Set();
+    this.replayFrames = [];
+    this.replayAccumulator = 0;
+    this.replayTime = 0;
+    this.isReplaying = false;
+    this.replayElapsed = 0;
     this.matchDurationMinutes = options.duration || 4; // match duration in real-world minutes
     this.difficulty = options.difficulty || 'standard';
     this.difficultyMultiplier = (this.difficulty === 'amateur') ? 0.75 :
@@ -86,7 +96,7 @@ export class MatchSimulation {
     const awayForm = FORMATIONS[this.awayTeamData.defaultFormation || '4-3-3'] || FORMATIONS['4-3-3'];
 
     // Spawn 11 Home Players
-    this.homeTeamData.roster.slice(0, 11).forEach((info, idx) => {
+    this.homeRoster.forEach((info, idx) => {
       const isGK = idx === 0;
       const kit = isGK ? (this.homeTeamData.gkKit || this.homeTeamData.homeKit) : this.homeTeamData.homeKit;
       const player = isGK
@@ -130,6 +140,7 @@ export class MatchSimulation {
     // Default user player: Home Team Captain / Attacking Mid / Striker
     this.activeUserPlayer = this.homePlayers.find(p => p.info.num === 10) || this.homePlayers[10];
     this.activeUserPlayer.setSelected(true);
+    this.allMatchPlayers = new Set([...this.homePlayers, ...this.awayPlayers]);
 
     this.resetToKickoff('home');
   }
@@ -204,6 +215,83 @@ export class MatchSimulation {
     if (this.onStaminaUpdate) {
       this.onStaminaUpdate(player.stamina, player.info);
     }
+  }
+
+  recordPlayerStat(player, stat, amount = 1) {
+    if (!player) return;
+    const stats = this.playerMatchStats.get(player) || {
+      goals: 0,
+      assists: 0,
+      shots: 0,
+      saves: 0,
+      tackles: 0,
+      passes: 0
+    };
+    stats[stat] = (stats[stat] || 0) + amount;
+    this.playerMatchStats.set(player, stats);
+  }
+
+  getPlayerOfMatch() {
+    const players = [...this.allMatchPlayers];
+    if (!players.length) return null;
+
+    return players
+      .map(player => {
+        const stats = this.playerMatchStats.get(player) || {};
+        const impact = (stats.goals || 0) * 10 +
+          (stats.assists || 0) * 7 +
+          (stats.saves || 0) * 8 +
+          (stats.tackles || 0) * 2 +
+          (stats.shots || 0) * 0.4;
+        const rating = Math.min(10, Math.round((6 + impact * 0.1) * 10) / 10);
+        return { player, stats, rating };
+      })
+      .sort((a, b) =>
+        b.rating - a.rating ||
+        (b.player.info.ovr || 0) - (a.player.info.ovr || 0)
+      )[0];
+  }
+
+  performSubstitution(outgoingNumber, incomingNumber) {
+    if (this.substitutionsUsed >= 5) {
+      return { success: false, message: 'Five substitutions have already been used.' };
+    }
+
+    const outgoingIndex = this.homePlayers.findIndex(player => player.info.num === outgoingNumber);
+    const incomingIndex = this.homeBench.findIndex(player => player.num === incomingNumber);
+    if (outgoingIndex < 0 || incomingIndex < 0) {
+      return { success: false, message: 'Choose a player on the pitch and one on the bench.' };
+    }
+
+    const outgoing = this.homePlayers[outgoingIndex];
+    const incomingInfo = this.homeBench[incomingIndex];
+    const incomingIsGoalkeeper = incomingInfo.role === 'GK';
+    if (outgoing.isGoalkeeper !== incomingIsGoalkeeper) {
+      return { success: false, message: 'A goalkeeper can only replace the goalkeeper.' };
+    }
+
+    const incoming = incomingIsGoalkeeper
+      ? new Goalkeeper3D(this.scene, incomingInfo, this.homeTeamData.gkKit || this.homeTeamData.homeKit)
+      : new Player3D(this.scene, incomingInfo, this.homeTeamData.homeKit);
+    incoming.team = 'home';
+    incoming.teamData = this.homeTeamData;
+    incoming.position.copy(outgoing.position);
+    incoming.rotation = outgoing.rotation;
+    incoming.baseFormationSpot = outgoing.baseFormationSpot.clone();
+    this.homePlayers[outgoingIndex] = incoming;
+    this.homeRoster[outgoingIndex] = incomingInfo;
+    this.homeBench.splice(incomingIndex, 1);
+    this.homeBench.push(outgoing.info);
+    this.allMatchPlayers.add(incoming);
+
+    if (this.activeUserPlayer === outgoing) {
+      this.selectPlayer(incoming);
+    }
+
+    outgoing.dispose();
+    this.substitutionsUsed++;
+    this.notify(`SUBSTITUTION · ${incoming.info.name.toUpperCase()} ON FOR ${outgoing.info.name.toUpperCase()}`);
+    return { success: true, message: `${incoming.info.name} is on for ${outgoing.info.name}.` };
   }
 
   switchActivePlayer() {
@@ -331,6 +419,7 @@ export class MatchSimulation {
     this.ball.owner = null;
     player.triggerKick();
     this.homeShots++;
+    this.recordPlayerStat(player, 'shots');
 
     // Aim towards away goal (X = 52.5) with corner placement
     const goalX = 52.5;
@@ -357,6 +446,7 @@ export class MatchSimulation {
   executeAIShot(player, target) {
     this.ball.owner = null;
     this.awayShots++;
+    this.recordPlayerStat(player, 'shots');
     const shotSpeed = 20 + Math.random() * 8;
 
     const dirX = target.x - this.ball.position.x;
@@ -376,6 +466,7 @@ export class MatchSimulation {
   executeUserPass(player, type = 'short') {
     this.ball.owner = null;
     player.triggerKick();
+    this.recordPlayerStat(player, 'passes');
 
     // Find best target teammate
     let candidates = this.homePlayers.filter(p => p !== player && !p.isGoalkeeper);
@@ -433,6 +524,7 @@ export class MatchSimulation {
 
   executeAIPass(player, target) {
     this.ball.owner = null;
+    this.recordPlayerStat(player, 'passes');
     const dx = target.position.x - this.ball.position.x;
     const dz = target.position.z - this.ball.position.z;
     const dist = Math.hypot(dx, dz) || 1;
@@ -456,6 +548,7 @@ export class MatchSimulation {
         if (dist < reach) {
           // Clean tackle dispossession!
           this.ball.owner = player;
+          this.recordPlayerStat(player, 'tackles');
           this.sound.playTackle();
           this.notify('CRISP TACKLE WON!');
         }
@@ -468,6 +561,7 @@ export class MatchSimulation {
       const dist = aiPlayer.position.distanceTo(this.ball.owner.position);
       if (dist < 1.9) {
         this.ball.owner = aiPlayer;
+        this.recordPlayerStat(aiPlayer, 'tackles');
         this.sound.playTackle();
         this.notify('POSSESSION WON BY OPPONENT');
       }
@@ -591,6 +685,7 @@ export class MatchSimulation {
       scorer.triggerCelebrate();
       this.notify(`GOAL! ${this.awayTeamData.name.toUpperCase()} SCORE!`);
     }
+    this.recordPlayerStat(scorer, 'goals');
 
     this.commentary.commentGoal(
       scoringTeam === 'home' ? this.homeTeamData.name : this.awayTeamData.name,
@@ -617,6 +712,10 @@ export class MatchSimulation {
   }
 
   update(dt, input) {
+    if (this.isReplaying) {
+      this.updateReplay(dt);
+      return;
+    }
     if (this.matchState === 'paused') return;
 
     // Track elapsed time & match clock (0' to 90')
@@ -681,6 +780,119 @@ export class MatchSimulation {
     this.ball.update(dt);
     this.homePlayers.forEach(p => p.update(dt));
     this.awayPlayers.forEach(p => p.update(dt));
+    if (this.matchState === 'playing') this.recordReplayFrame(dt);
+  }
+
+  recordReplayFrame(dt) {
+    this.replayTime += dt;
+    this.replayAccumulator += dt;
+    if (this.replayAccumulator < 0.1) return;
+    this.replayAccumulator -= 0.1;
+    this.replayFrames.push({
+      time: this.replayTime,
+      ball: this.ball.position.clone(),
+      home: this.homePlayers.map(player => ({
+        position: player.position.clone(),
+        rotation: player.rotation
+      })),
+      away: this.awayPlayers.map(player => ({
+        position: player.position.clone(),
+        rotation: player.rotation
+      }))
+    });
+    if (this.replayFrames.length > 121) this.replayFrames.shift();
+  }
+
+  startReplay() {
+    if (this.isReplaying || this.replayFrames.length < 2) return false;
+
+    this.replayRestoreState = {
+      ballPosition: this.ball.position.clone(),
+      ballVelocity: this.ball.velocity.clone(),
+      ballOwner: this.ball.owner,
+      home: this.homePlayers.map(player => ({
+        position: player.position.clone(),
+        velocity: player.velocity.clone(),
+        rotation: player.rotation
+      })),
+      away: this.awayPlayers.map(player => ({
+        position: player.position.clone(),
+        velocity: player.velocity.clone(),
+        rotation: player.rotation
+      }))
+    };
+    this.replayElapsed = 0;
+    this.replayDuration = this.replayFrames[this.replayFrames.length - 1].time -
+      this.replayFrames[0].time;
+    this.replayCameraMode = window.fcEngine?.cameraSystem.mode || 'broadcast';
+    window.fcEngine?.cameraSystem.setMode('broadcast');
+    this.matchState = 'paused';
+    this.isReplaying = true;
+    return true;
+  }
+
+  updateReplay(dt) {
+    this.replayElapsed += dt;
+    const frames = this.replayFrames;
+    const startTime = frames[0].time;
+    const replayTime = startTime + this.replayElapsed;
+    let nextIndex = frames.findIndex(frame => frame.time >= replayTime);
+    if (nextIndex < 0) {
+      this.stopReplay();
+      return;
+    }
+
+    const previousIndex = Math.max(0, nextIndex - 1);
+    const previous = frames[previousIndex];
+    const next = frames[nextIndex];
+    const span = next.time - previous.time || 1;
+    const progress = Math.max(0, Math.min(1, (replayTime - previous.time) / span));
+
+    this.ball.position.lerpVectors(previous.ball, next.ball, progress);
+    this.ball.owner = null;
+    this.homePlayers.forEach((player, index) => {
+      player.position.lerpVectors(previous.home[index].position, next.home[index].position, progress);
+      player.rotation = previous.home[index].rotation +
+        (next.home[index].rotation - previous.home[index].rotation) * progress;
+      player.update(dt);
+    });
+    this.awayPlayers.forEach((player, index) => {
+      player.position.lerpVectors(previous.away[index].position, next.away[index].position, progress);
+      player.rotation = previous.away[index].rotation +
+        (next.away[index].rotation - previous.away[index].rotation) * progress;
+      player.update(dt);
+    });
+    this.ball.update(dt);
+    if (this.onReplayProgress) {
+      this.onReplayProgress(this.replayDuration ? this.replayElapsed / this.replayDuration : 1);
+    }
+  }
+
+  stopReplay() {
+    if (!this.isReplaying || !this.replayRestoreState) return false;
+
+    this.ball.position.copy(this.replayRestoreState.ballPosition);
+    this.ball.velocity.copy(this.replayRestoreState.ballVelocity);
+    this.ball.owner = this.replayRestoreState.ballOwner;
+    this.homePlayers.forEach((player, index) => {
+      player.position.copy(this.replayRestoreState.home[index].position);
+      player.velocity.copy(this.replayRestoreState.home[index].velocity);
+      player.rotation = this.replayRestoreState.home[index].rotation;
+      player.update(0);
+    });
+    this.awayPlayers.forEach((player, index) => {
+      player.position.copy(this.replayRestoreState.away[index].position);
+      player.velocity.copy(this.replayRestoreState.away[index].velocity);
+      player.rotation = this.replayRestoreState.away[index].rotation;
+      player.update(0);
+    });
+    this.ball.update(0);
+    this.replayRestoreState = null;
+    this.isReplaying = false;
+    this.matchState = 'paused';
+    window.fcEngine?.cameraSystem.setMode(this.replayCameraMode || 'broadcast');
+    if (this.onReplayEnd) this.onReplayEnd();
+    return true;
   }
 
   startSecondHalf() {
