@@ -610,3 +610,4 @@ export class MatchSimulation {
     this.scene.remove(this.ball.group);
   }
 }
+

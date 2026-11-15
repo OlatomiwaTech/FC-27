@@ -293,3 +293,4 @@ export class MatchHUD {
     this.container.innerHTML = '';
   }
 }
+

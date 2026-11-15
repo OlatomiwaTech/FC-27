@@ -453,3 +453,4 @@ export function getTeam(id) {
 export function getStadium(id) {
   return STADIUMS.find(s => s.id === id) || STADIUMS[0];
 }
+

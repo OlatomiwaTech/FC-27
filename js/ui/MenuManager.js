@@ -268,3 +268,4 @@ export class MenuManager {
     this.container.classList.add('hidden');
   }
 }
+

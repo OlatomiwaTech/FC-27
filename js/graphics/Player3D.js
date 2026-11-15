@@ -347,3 +347,4 @@ export class Player3D {
     this.scene.remove(this.group);
   }
 }
+

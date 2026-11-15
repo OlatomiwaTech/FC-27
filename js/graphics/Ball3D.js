@@ -117,3 +117,4 @@ export class Ball3D {
     this.shadow.material.opacity = Math.max(0.1, 0.55 - heightAboveGround * 0.08);
   }
 }
+
