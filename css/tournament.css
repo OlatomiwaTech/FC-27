@@ -1,0 +1,174 @@
+/**
+ * FC 27 - Tournament Knockout Bracket Styles
+ */
+
+.tournament-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 20%, rgba(12, 22, 38, 0.95) 0%, rgba(4, 8, 14, 0.98) 100%);
+  overflow-y: auto;
+}
+
+.tourn-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.tourn-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.trophy-icon {
+  font-size: 2.2rem;
+}
+
+.tourn-title h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.tourn-title small {
+  color: var(--volt);
+  font-weight: 800;
+}
+
+.bracket-stage {
+  flex: 1;
+  padding: 36px 48px;
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.bracket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 36px;
+  align-items: center;
+}
+
+.bracket-col {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.col-header {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  color: var(--volt);
+  border-bottom: 2px solid var(--volt);
+  padding-bottom: 8px;
+}
+
+.fixture-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tourn-match-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.tourn-match-card:hover {
+  border-color: var(--border-glow);
+  transform: translateY(-2px);
+}
+
+.match-team-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: 4px;
+}
+
+.match-team-row.winner {
+  background: rgba(0, 255, 135, 0.15);
+  border-left: 3px solid var(--volt);
+}
+
+.m-crest {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 3px;
+  color: var(--volt);
+}
+
+.m-name {
+  flex: 1;
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.m-score {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 1.1rem;
+}
+
+.match-action-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.match-action-btns .fc-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+}
+
+/* Final Pedestal */
+.trophy-pedestal {
+  background: linear-gradient(180deg, rgba(255, 183, 3, 0.15) 0%, rgba(13, 23, 38, 0.8) 100%);
+  border: 1px solid rgba(255, 183, 3, 0.3);
+  border-radius: var(--radius-md);
+  padding: 24px;
+  text-align: center;
+  margin-top: 24px;
+}
+
+.big-trophy {
+  font-size: 4rem;
+  margin-bottom: 8px;
+  animation: trophy-bounce 2s infinite ease-in-out;
+}
+
+@keyframes trophy-bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.trophy-pedestal strong {
+  font-size: 0.95rem;
+  font-weight: 900;
+  color: var(--gold);
+  letter-spacing: 0.08em;
+}

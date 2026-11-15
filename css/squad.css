@@ -1,0 +1,570 @@
+/**
+ * FC 27 - Ultimate Team & Tactical Squad Builder Styles (User Image 2)
+ */
+
+.squad-builder-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 30%, rgba(10, 24, 38, 0.95) 0%, rgba(4, 9, 14, 0.98) 100%);
+  overflow: hidden;
+}
+
+/* Topbar */
+.fut-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 36px;
+  background: rgba(6, 13, 22, 0.95);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.fut-brand {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.fut-logo {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #ffffff;
+}
+
+.fut-logo b {
+  color: var(--volt);
+  font-style: italic;
+}
+
+.fut-section-title {
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  border-left: 1px solid var(--border-subtle);
+  padding-left: 16px;
+}
+
+.fut-nav-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nav-tab:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.nav-tab.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  border-bottom: 2px solid var(--volt);
+}
+
+.fut-currency {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.curr-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+}
+
+.curr-icon.gold { color: var(--gold); }
+.curr-icon.volt { color: var(--volt); }
+
+.curr-item small {
+  color: var(--text-dim);
+  font-size: 0.7rem;
+}
+
+.fut-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-subtle);
+  color: #ffffff;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* Main Content Area: Left Pitch, Right Sidebar */
+.fut-main-content {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  flex: 1;
+  padding: 24px 36px;
+  gap: 28px;
+  overflow: hidden;
+}
+
+/* Tactical Pitch Container */
+.tactical-pitch-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.squad-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.club-badge-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.club-crest-pill {
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  font-weight: 900;
+  background: var(--volt);
+  color: #05160d;
+  padding: 8px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.stars-row {
+  color: var(--gold);
+  font-size: 0.85rem;
+}
+
+.rating-text {
+  color: var(--text-muted);
+  margin-left: 8px;
+}
+
+.rating-text b {
+  color: #ffffff;
+}
+
+.squad-metrics {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.metric-pill {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
+}
+
+.metric-pill small {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.metric-pill strong {
+  font-size: 1.1rem;
+  color: var(--volt);
+}
+
+.chem-meter {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  margin-top: 4px;
+  border-radius: 2px;
+}
+
+.chem-meter span {
+  display: block;
+  height: 100%;
+  background: var(--volt);
+}
+
+.formation-selector-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.formation-selector-wrap label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-dim);
+  margin-bottom: 3px;
+}
+
+.formation-selector-wrap select {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  color: #ffffff;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  outline: none;
+}
+
+/* 2D Tactical Pitch with Cards */
+.pitch-tactics-board {
+  position: relative;
+  flex: 1;
+  background: linear-gradient(180deg, #184724 0%, #153e20 100%);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-md);
+  box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+}
+
+.pitch-marking {
+  position: absolute;
+  border: 2px solid rgba(255, 255, 255, 0.25);
+  pointer-events: none;
+}
+
+.pitch-marking.halfway {
+  top: 50%;
+  left: 0;
+  width: 100%;
+  height: 0;
+}
+
+.pitch-marking.center-circle {
+  top: 50%;
+  left: 50%;
+  width: 140px;
+  height: 140px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.pitch-marking.pen-box.top {
+  top: 0;
+  left: 50%;
+  width: 44%;
+  height: 18%;
+  transform: translateX(-50%);
+  border-top: none;
+}
+
+.pitch-marking.pen-box.bottom {
+  bottom: 0;
+  left: 50%;
+  width: 44%;
+  height: 18%;
+  transform: translateX(-50%);
+  border-bottom: none;
+}
+
+/* FUT Player Card on Pitch */
+.pitch-cards-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.fut-player-card {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  width: 78px;
+  height: 102px;
+  background: linear-gradient(135deg, #1c2738 0%, #0d1522 100%);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 4px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fut-player-card:hover {
+  transform: translate(-50%, -55%) scale(1.08);
+  border-color: var(--volt);
+  box-shadow: 0 10px 24px var(--volt-glow);
+  z-index: 10;
+}
+
+.fut-player-card.card-selected {
+  border: 2px solid var(--volt);
+  box-shadow: 0 0 20px var(--volt);
+  z-index: 15;
+}
+
+.gold-special {
+  background: linear-gradient(135deg, #2b2512 0%, #151206 100%);
+  border-color: rgba(255, 183, 3, 0.4);
+}
+
+.card-ovr {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.card-pos {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.card-avatar-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.card-name {
+  font-size: 0.7rem;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 90%;
+  text-align: center;
+}
+
+.card-chem-dots {
+  font-size: 0.5rem;
+  color: var(--volt);
+  letter-spacing: 2px;
+}
+
+/* Sidebar: Large Card & Bench */
+.squad-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  height: 100%;
+}
+
+.fut-large-card {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  position: relative;
+  overflow: hidden;
+}
+
+.fut-large-card.glow-toty {
+  border-color: var(--cyan);
+  box-shadow: 0 0 30px rgba(0, 210, 255, 0.35);
+}
+
+.fut-card-header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.card-big-ovr {
+  font-family: var(--font-mono);
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.card-big-role {
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.card-badge {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 900;
+  background: var(--volt);
+  color: #05160d;
+  padding: 2px 8px;
+  border-radius: 4px;
+  margin-left: auto;
+}
+
+.fut-card-hero {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-silhouette {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+.fut-card-name {
+  font-size: 1.3rem;
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 0.04em;
+  margin-bottom: 14px;
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+}
+
+.fut-card-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.stat-box {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+
+.stat-box small {
+  font-size: 0.7rem;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.stat-box b {
+  font-size: 1rem;
+  font-family: var(--font-mono);
+  color: #ffffff;
+}
+
+.card-playstyles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.playstyle-pill {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: rgba(0, 255, 135, 0.1);
+  border: 1px solid rgba(0, 255, 135, 0.3);
+  color: var(--volt);
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* Bench Section */
+.bench-section {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.bench-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.bench-title span {
+  font-weight: 800;
+  font-size: 0.85rem;
+  color: #ffffff;
+}
+
+.bench-title small {
+  font-size: 0.7rem;
+  color: var(--volt);
+}
+
+.bench-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  overflow-y: auto;
+}
+
+.bench-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.bench-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--volt);
+}
+
+.bench-ovr {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  color: var(--gold);
+}
+
+.bench-role {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+.bench-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  flex: 1;
+}
+
+.bench-swap-btn {
+  font-size: 0.7rem;
+  font-weight: 800;
+  background: rgba(0, 255, 135, 0.15);
+  border: 1px solid rgba(0, 255, 135, 0.4);
+  color: var(--volt);
+  padding: 3px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+}

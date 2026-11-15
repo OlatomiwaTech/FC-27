@@ -1,0 +1,124 @@
+/**
+ * FC 27 - Training Arena & Drills Styles
+ */
+
+.training-screen {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(circle at 50% 20%, rgba(10, 25, 38, 0.95) 0%, rgba(4, 9, 14, 0.98) 100%);
+  overflow-y: auto;
+}
+
+.training-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 48px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.train-title {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.train-badge {
+  font-size: 1.8rem;
+  color: var(--volt);
+}
+
+.train-title h2 {
+  font-size: 1.6rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+}
+
+.train-title small {
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.training-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+  padding: 40px 48px;
+  max-width: 1400px;
+  margin: auto;
+  width: 100%;
+}
+
+.train-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.5);
+}
+
+.train-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--border-glow);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.7);
+}
+
+.train-card-hero {
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(135deg, rgba(0, 255, 135, 0.15) 0%, rgba(0, 210, 255, 0.1) 100%);
+}
+
+.mode-tag {
+  position: absolute;
+  top: 14px;
+  left: 16px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 900;
+  background: var(--volt);
+  color: #041209;
+  padding: 3px 8px;
+  border-radius: 3px;
+}
+
+.train-card-icon {
+  font-size: 4rem;
+}
+
+.train-card-body {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  flex: 1;
+}
+
+.train-card-body h3 {
+  font-size: 1.3rem;
+  font-weight: 900;
+  margin-bottom: 8px;
+}
+
+.train-card-body p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1.4;
+  margin-bottom: 24px;
+}
+
+.train-card-body .fc-btn {
+  width: 100%;
+}

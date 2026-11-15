@@ -1,0 +1,165 @@
+/**
+ * FC 27 - Core Design System & Global Stylesheet
+ * Premium dark sports aesthetic inspired by EA Sports FC 24/25/26/27,
+ * vibrant Volt Green, Cyber Cyan, glassmorphism, and responsive typography.
+ */
+
+:root {
+  --bg-deep: #060b12;
+  --bg-card: rgba(13, 23, 38, 0.78);
+  --bg-glass: rgba(18, 30, 49, 0.65);
+  --border-subtle: rgba(255, 255, 255, 0.12);
+  --border-glow: rgba(0, 255, 135, 0.4);
+
+  --volt: #00ff87;
+  --volt-glow: rgba(0, 255, 135, 0.35);
+  --cyan: #00d2ff;
+  --gold: #ffb703;
+  --crimson: #ff0055;
+
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --text-dim: #64748b;
+
+  --font-display: 'Segoe UI', system-ui, -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  --font-mono: 'Consolas', 'Courier New', monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--bg-deep);
+  color: var(--text-main);
+  font-family: var(--font-display);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+/* Master 3D WebGL Canvas Layer */
+#webglCanvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: block;
+}
+
+/* UI Overlay Layer */
+#uiRoot {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  pointer-events: none;
+}
+
+#uiRoot > * {
+  pointer-events: auto;
+}
+
+/* Common FC Button Component */
+.fc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 24px;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.fc-btn.primary {
+  background: linear-gradient(135deg, var(--volt) 0%, #00b468 100%);
+  color: #05160d;
+  box-shadow: 0 4px 20px var(--volt-glow);
+}
+
+.fc-btn.primary:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.15);
+  box-shadow: 0 6px 26px rgba(0, 255, 135, 0.55);
+}
+
+.fc-btn.secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  border: 1px solid var(--border-subtle);
+  backdrop-filter: blur(8px);
+}
+
+.fc-btn.secondary:hover {
+  background: rgba(255, 255, 255, 0.16);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.fc-btn.danger {
+  background: rgba(255, 0, 85, 0.2);
+  color: #ff6699;
+  border: 1px solid rgba(255, 0, 85, 0.4);
+}
+
+.fc-btn.danger:hover {
+  background: rgba(255, 0, 85, 0.4);
+  color: #ffffff;
+}
+
+/* Utilities */
+.hidden {
+  display: none !important;
+}
+
+.text-volt { color: var(--volt) !important; }
+.text-cyan { color: var(--cyan) !important; }
+.text-gold { color: var(--gold) !important; }
+
+.pulse-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: var(--volt);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--volt);
+  animation: pulse-glow 1.5s infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.85); }
+}
+
+kbd {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #ffffff;
+}

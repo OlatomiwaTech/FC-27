@@ -1,0 +1,279 @@
+/**
+ * FC 27 - In-Game Broadcast HUD, Radar & Scorebug Styles
+ */
+
+/* Top Scorebug */
+.hud-scorebug {
+  position: absolute;
+  top: 24px;
+  left: 36px;
+  display: flex;
+  align-items: stretch;
+  background: rgba(6, 11, 18, 0.88);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  backdrop-filter: blur(14px);
+  overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5);
+}
+
+.scorebug-team {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+}
+
+.scorebug-team.home {
+  border-right: 1px solid var(--border-subtle);
+}
+
+.team-badge {
+  font-family: var(--font-mono);
+  font-weight: 900;
+  font-size: 0.8rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--volt);
+}
+
+.team-title {
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+}
+
+.team-score {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #ffffff;
+  min-width: 20px;
+  text-align: center;
+}
+
+.scorebug-clock {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 6px 14px;
+  background: rgba(0, 255, 135, 0.1);
+  border-left: 1px solid var(--border-subtle);
+  border-right: 1px solid var(--border-subtle);
+}
+
+.match-time {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: var(--volt);
+}
+
+.match-period {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+}
+
+/* Alert Ticker */
+.hud-ticker {
+  position: absolute;
+  top: 86px;
+  left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(8, 16, 26, 0.85);
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #ffffff;
+  backdrop-filter: blur(8px);
+  transition: all 0.3s ease;
+}
+
+.hud-ticker.pulse {
+  border-color: var(--volt);
+  box-shadow: 0 0 16px var(--volt-glow);
+  transform: scale(1.03);
+}
+
+.ticker-pulse {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--volt);
+  box-shadow: 0 0 8px var(--volt);
+}
+
+/* Player Info Card (Bottom-Left) */
+.hud-player-card {
+  position: absolute;
+  bottom: 28px;
+  left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(8, 16, 26, 0.88);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+  backdrop-filter: blur(14px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.55);
+}
+
+.player-num-badge {
+  font-family: var(--font-mono);
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: #041009;
+  background: var(--volt);
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 14px var(--volt-glow);
+}
+
+.player-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.player-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.player-name {
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.player-role-pill {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--cyan);
+}
+
+.player-bars {
+  display: flex;
+  gap: 14px;
+}
+
+.bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bar-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+}
+
+.bar-track {
+  width: 110px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.1s linear;
+}
+
+.bar-wrap.stamina .bar-fill {
+  background: linear-gradient(90deg, #00b468, var(--volt));
+}
+
+.bar-wrap.power .bar-fill {
+  background: linear-gradient(90deg, var(--gold), #ff0055);
+}
+
+/* Radar Mini-Map (Bottom-Center) */
+.hud-radar {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(4, 9, 16, 0.9);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.65);
+}
+
+.hud-radar canvas {
+  display: block;
+  border-radius: 3px;
+}
+
+/* Overlays: Pause, Halftime, Fulltime */
+.modal-scoreline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  font-size: 2.2rem;
+  font-weight: 900;
+  margin: 24px 0;
+  font-family: var(--font-mono);
+}
+
+.modal-scoreline strong {
+  color: var(--volt);
+}
+
+.modal-scoreline i {
+  color: var(--text-dim);
+  font-style: normal;
+}
+
+.modal-stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  background: rgba(0, 0, 0, 0.35);
+  padding: 16px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 24px;
+}
+
+.stat-col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: center;
+}
+
+.stat-col small {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: var(--text-dim);
+}
+
+.stat-col strong {
+  font-size: 1.15rem;
+  color: #ffffff;
+}
