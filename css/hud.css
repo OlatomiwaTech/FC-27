@@ -385,6 +385,72 @@
     padding: 8px 11px;
   }
 
+  .hud-player-card {
+    bottom: 12px;
+    left: 12px;
+    gap: 8px;
+    width: min(198px, 55vw);
+    padding: 8px;
+  }
+
+  .player-num-badge {
+    flex: 0 0 32px;
+    width: 32px;
+    height: 32px;
+    font-size: 1.1rem;
+  }
+
+  .player-meta {
+    min-width: 0;
+  }
+
+  .player-name-row {
+    gap: 5px;
+  }
+
+  .player-name {
+    overflow: hidden;
+    font-size: 0.72rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .player-role-pill {
+    flex: 0 0 auto;
+    font-size: 0.62rem;
+  }
+
+  .player-bars {
+    gap: 6px;
+  }
+
+  .bar-track {
+    width: 58px;
+  }
+
+  .hud-radar {
+    right: 12px;
+    bottom: 126px;
+    left: auto;
+    transform: none;
+  }
+
+  .hud-touch-controls {
+    right: 12px;
+    bottom: 12px;
+    gap: 6px;
+  }
+
+  .touch-actions-group {
+    gap: 6px;
+  }
+
+  .touch-btn {
+    width: 48px;
+    height: 48px;
+    font-size: 0.62rem;
+  }
+
   .commentary-line {
     font-size: 0.76rem;
   }
