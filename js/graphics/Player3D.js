@@ -40,19 +40,36 @@ export class Player3D {
     const shortsColor = parseInt((kit.shorts || '#03045e').replace('#', '0x'), 16);
     const socksColor = parseInt((kit.socks || '#00b4d8').replace('#', '0x'), 16);
 
-    // Skin tones variation
+    // Skin tones variation with more options
     let skinHex = 0xd4a373;
     let hairHex = 0x2b1d0c;
+    let hairStyle = 'short';
+    
     if (this.info.face?.includes('black') || this.info.face?.includes('dreads') || this.info.face?.includes('afro')) {
       skinHex = 0x5a3d28;
       hairHex = 0x111111;
+      hairStyle = Math.random() > 0.5 ? 'afro' : 'short';
     } else if (this.info.face?.includes('asian')) {
       skinHex = 0xe8c39e;
       hairHex = 0x1a1a1a;
+      hairStyle = 'short';
     } else if (this.info.face?.includes('blonde')) {
       skinHex = 0xf5d0b5;
       hairHex = 0xd4af37;
+      hairStyle = Math.random() > 0.5 ? 'long' : 'medium';
+    } else if (this.info.face?.includes('brown')) {
+      skinHex = 0x8d5524;
+      hairHex = 0x4a3728;
+      hairStyle = Math.random() > 0.5 ? 'curly' : 'medium';
+    } else if (this.info.face?.includes('white')) {
+      skinHex = 0xf5d0b5;
+      hairHex = Math.random() > 0.5 ? 0x2b1d0c : 0x4a3728;
+      hairStyle = Math.random() > 0.7 ? 'long' : (Math.random() > 0.5 ? 'medium' : 'short');
     }
+    
+    // Body type variations
+    const bodyType = this.info.bodyType || (Math.random() > 0.5 ? 'athletic' : 'stocky');
+    this.bodyScale = bodyType === 'stocky' ? 1.1 : (bodyType === 'slim' ? 0.95 : 1.0);
 
     // Generate canvas jersey texture with number and badge
     const jerseyTex = this.createJerseyTexture(kit.shirt || '#00b4d8', kit.accent || '#ffffff');
@@ -181,18 +198,82 @@ export class Player3D {
     rightPupil.position.set(0.065, 1.86, 0.19);
     this.bodyGroup.add(rightPupil);
 
-    // Mouth
+    // Mouth with lips
     const mouthGeo = new THREE.BoxGeometry(0.07, 0.015, 0.02);
     const mouthMat = new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.9 });
     const mouth = new THREE.Mesh(mouthGeo, mouthMat);
     mouth.position.set(0, 1.78, 0.17);
     this.bodyGroup.add(mouth);
 
-    // Hair cap (styled)
-    const hairGeo = new THREE.SphereGeometry(0.2, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
-    const hair = new THREE.Mesh(hairGeo, this.hairMat);
-    hair.position.y = 1.86;
-    this.bodyGroup.add(hair);
+    // Chin
+    const chinGeo = new THREE.SphereGeometry(0.04, 8, 8);
+    const chin = new THREE.Mesh(chinGeo, this.skinMat);
+    chin.position.set(0, 1.75, 0.12);
+    this.bodyGroup.add(chin);
+
+    // Ears
+    const earGeo = new THREE.SphereGeometry(0.025, 6, 6);
+    const leftEar = new THREE.Mesh(earGeo, this.skinMat);
+    leftEar.position.set(-0.09, 1.84, 0);
+    this.bodyGroup.add(leftEar);
+    const rightEar = new THREE.Mesh(earGeo, this.skinMat);
+    rightEar.position.set(0.09, 1.84, 0);
+    this.bodyGroup.add(rightEar);
+
+    // Eyebrows
+    const eyebrowGeo = new THREE.BoxGeometry(0.055, 0.01, 0.015);
+    const eyebrowMat = new THREE.MeshStandardMaterial({ color: hairHex, roughness: 0.8 });
+    const leftEyebrow = new THREE.Mesh(eyebrowGeo, eyebrowMat);
+    leftEyebrow.position.set(-0.065, 1.89, 0.14);
+    this.bodyGroup.add(leftEyebrow);
+    const rightEyebrow = new THREE.Mesh(eyebrowGeo, eyebrowMat);
+    rightEyebrow.position.set(0.065, 1.89, 0.14);
+    this.bodyGroup.add(rightEyebrow);
+
+    // Hair with different styles
+    if (hairStyle === 'afro') {
+      const afroGeo = new THREE.SphereGeometry(0.23, 16, 14, 0, Math.PI * 2, 0, Math.PI * 0.6);
+      const afro = new THREE.Mesh(afroGeo, this.hairMat);
+      afro.position.y = 1.88;
+      this.bodyGroup.add(afro);
+    } else if (hairStyle === 'long') {
+      const longHairGeo = new THREE.CylinderGeometry(0.08, 0.12, 0.25, 12);
+      const longHair = new THREE.Mesh(longHairGeo, this.hairMat);
+      longHair.position.set(0, 1.7, -0.12);
+      longHair.rotation.x = 0.2;
+      this.bodyGroup.add(longHair);
+      const sideHairGeo = new THREE.BoxGeometry(0.18, 0.1, 0.08);
+      const leftSideHair = new THREE.Mesh(sideHairGeo, this.hairMat);
+      leftSideHair.position.set(-0.09, 1.88, 0);
+      this.bodyGroup.add(leftSideHair);
+      const rightSideHair = new THREE.Mesh(sideHairGeo, this.hairMat);
+      rightSideHair.position.set(0.09, 1.88, 0);
+      this.bodyGroup.add(rightSideHair);
+    } else if (hairStyle === 'curly') {
+      const curlGeo = new THREE.CylinderGeometry(0.02, 0.03, 0.1, 6);
+      for (let i = 0; i < 8; i++) {
+        const angle = (i / 8) * Math.PI * 2;
+        const radius = 0.08;
+        const curl = new THREE.Mesh(curlGeo, this.hairMat);
+        curl.position.set(Math.cos(angle) * radius, 1.92, Math.sin(angle) * radius);
+        curl.rotation.x = 0.3 + Math.sin(angle) * 0.2;
+        this.bodyGroup.add(curl);
+      }
+      const baseHairGeo = new THREE.SphereGeometry(0.2, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
+      const baseHair = new THREE.Mesh(baseHairGeo, this.hairMat);
+      baseHair.position.y = 1.86;
+      this.bodyGroup.add(baseHair);
+    } else if (hairStyle === 'medium') {
+      const mediumHairGeo = new THREE.SphereGeometry(0.21, 14, 12, 0, Math.PI * 2, 0, Math.PI * 0.58);
+      const mediumHair = new THREE.Mesh(mediumHairGeo, this.hairMat);
+      mediumHair.position.y = 1.87;
+      this.bodyGroup.add(mediumHair);
+    } else {
+      const hairGeo = new THREE.SphereGeometry(0.2, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
+      const hair = new THREE.Mesh(hairGeo, this.hairMat);
+      hair.position.y = 1.86;
+      this.bodyGroup.add(hair);
+    }
     if (this.info.face?.includes('afro') || this.info.face?.includes('curly') || this.info.face?.includes('dreads')) {
       const styleGeo = new THREE.SphereGeometry(0.19, 14, 12);
       const style = new THREE.Mesh(styleGeo, this.hairMat);

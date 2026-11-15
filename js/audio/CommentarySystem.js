@@ -178,4 +178,167 @@ export class CommentarySystem {
       this.speak(`It's all over! The final whistle blows and ${winnerName} take the victory with a ${homeScore} to ${awayScore} scoreline!`, 'high', 1.08, 1.08);
     }
   }
+
+  commentFoul(playerName, isYellow = false) {
+    if (isYellow) {
+      const lines = [
+        `YELLOW CARD! ${playerName.toUpperCase()} goes into the book!`,
+        `The referee shows a yellow card to ${playerName}!`,
+        `CAUTION! ${playerName.toUpperCase()} gets a warning!`
+      ];
+      this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.15, 1.1);
+    } else {
+      const lines = [
+        `FOUL! ${playerName.toUpperCase()} brings down the opponent!`,
+        `The referee blows for a foul by ${playerName}!`,
+        `Clumsy challenge from ${playerName}!`
+      ];
+      this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.12, 1.05);
+    }
+  }
+
+  commentCorner(teamName) {
+    const lines = [
+      `Corner kick for ${teamName}!`,
+      `${teamName} win a corner!`,
+      `Flag up! Corner to ${teamName}!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.1, 1.0);
+  }
+
+  commentOffside(teamName) {
+    const lines = [
+      `OFFSIDE! Against ${teamName}!`,
+      `The linesman's flag is up! Offside ${teamName}!`,
+      `Marginal offside call against ${teamName}!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.15, 1.08);
+  }
+
+  commentPenalty(teamName) {
+    const lines = [
+      `PENALTY TO ${teamName.toUpperCase()}!`,
+      `What a decision! Penalty kick for ${teamName}!`,
+      `The referee points to the spot! ${teamName} have a penalty!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.12, 1.12);
+  }
+
+  commentPenaltyMiss(gkName) {
+    const lines = [
+      `SAVED! ${gkName.toUpperCase()} DENIES THE PENALTY!`,
+      `WHAT A SAVE! The goalkeeper keeps it out!`,
+      `PENALTY MISSED! ${gkName.toUpperCase()} is the hero!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.18, 1.15);
+  }
+
+  commentPenaltyScore(scorerName) {
+    const lines = [
+      `GOAL! PENALTY CONVERTED BY ${scorerName.toUpperCase()}!`,
+      `Cool as you like! ${scorerName.toUpperCase()} slots it home!`,
+      `NO CHANCE FOR THE KEEPER! ${scorerName.toUpperCase()} SCORES FROM THE SPOT!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.15, 1.2);
+  }
+
+  commentSubstitution(playerName, subName) {
+    const lines = [
+      `Substitution: ${playerName} makes way for ${subName}!`,
+      `Here comes ${subName} to replace ${playerName}!`,
+      `Tactical change: ${subName} on, ${playerName} off!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.08, 1.0);
+  }
+
+  commentInjury(playerName) {
+    const lines = [
+      `Oh dear! ${playerName} is down injured!`,
+      `${playerName} is receiving treatment on the pitch!`,
+      `Medical attention needed for ${playerName}!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.08, 1.02);
+  }
+
+  commentOwnGoal(teamName, playerName) {
+    const lines = [
+      `OH NO! OWN GOAL BY ${teamName.toUpperCase()}!`,
+      `UNBELIEVABLE! ${playerName.toUpperCase()} puts it into his own net!`,
+      `What a tragedy! ${teamName.toUpperCase()} score against themselves!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.15, 1.18);
+  }
+
+  commentGreatSave(gkName, isSpectacular = false) {
+    if (isSpectacular) {
+      const lines = [
+        `WORLD CLASS SAVE BY ${gkName.toUpperCase()}!`,
+        `INCREDIBLE REFLEXES! ${gkName.toUpperCase()} DENIES A CERTAIN GOAL!`,
+        `HOW DID HE KEEP THAT OUT?! ${gkName.toUpperCase()} with a miracle save!`
+      ];
+      this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.2, 1.2);
+    } else {
+      const lines = [
+        `Good save by ${gkName}!`,
+        `${gkName.toUpperCase()} gets down well to stop that!`,
+        `The goalkeeper claims the ball!`
+      ];
+      this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.12, 1.05);
+    }
+  }
+
+  commentHeader(playerName) {
+    const lines = [
+      `${playerName.toUpperCase()} goes for the header!`,
+      `Powerful header from ${playerName}!`,
+      `${playerName} rises highest!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.15, 1.08);
+  }
+
+  commentVolley(playerName) {
+    const lines = [
+      `ACROBATIC VOLLEY FROM ${playerName.toUpperCase()}!`,
+      `${playerName} tries the bicycle kick!`,
+      `Spectacular attempt! ${playerName} with a scissor kick!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.18, 1.15);
+  }
+
+  commentDribble(playerName) {
+    const lines = [
+      `${playerName} takes on the defender!`,
+      `Skillful dribbling from ${playerName}!`,
+      `${playerName} with a mazy run!`,
+      `He's past one, past two! ${playerName} on a solo run!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.12, 1.05);
+  }
+
+  commentGoalkeeperAction(gkName) {
+    const lines = [
+      `You're now controlling the goalkeeper, ${gkName}!`,
+      `${gkName} between the sticks!`,
+      `The last line of defense: ${gkName}!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.08, 1.0);
+  }
+
+  commentGoalkeeperSave(gkName) {
+    const lines = [
+      `SAVE! ${gkName.toUpperCase()} with a brilliant stop!`,
+      `DENIED! ${gkName.toUpperCase()} keeps his team in it!`,
+      `BRILLIANT GOALKEEPING from ${gkName.toUpperCase()}!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'high', 1.18, 1.15);
+  }
+
+  commentGoalkeeperCatch(gkName) {
+    const lines = [
+      `${gkName.toUpperCase()} claims the ball confidently!`,
+      `Safe hands from ${gkName}!`,
+      `${gkName} catches it cleanly!`
+    ];
+    this.speak(lines[Math.floor(Math.random() * lines.length)], 'normal', 1.12, 1.05);
+  }
 }
