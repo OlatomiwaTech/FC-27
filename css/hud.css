@@ -278,3 +278,59 @@
   color: #ffffff;
 }
 
+/* Touch Controls */
+.hud-touch-controls {
+  display: none;
+  position: absolute;
+  bottom: 24px;
+  right: 36px;
+  gap: 12px;
+  z-index: 50;
+}
+
+@media (pointer: coarse), (max-width: 900px) {
+  .hud-touch-controls {
+    display: flex;
+  }
+}
+
+.touch-actions-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.touch-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(18, 30, 48, 0.85);
+  border: 2px solid var(--border-subtle);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: none;
+  backdrop-filter: blur(8px);
+}
+
+.touch-btn:active {
+  transform: scale(0.92);
+  border-color: var(--volt);
+  background: rgba(0, 255, 135, 0.25);
+}
+
+.touch-btn.shoot {
+  border-color: rgba(255, 183, 3, 0.5);
+  color: var(--gold);
+}
+
+.touch-btn.sprint {
+  border-color: rgba(0, 255, 135, 0.5);
+  color: var(--volt);
+}
+
+

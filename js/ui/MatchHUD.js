@@ -67,6 +67,19 @@ export class MatchHUD {
         <canvas id="radarCanvas" width="160" height="104"></canvas>
       </div>
 
+      <!-- Touch Controls for Mobile/Tablets -->
+      <div class="hud-touch-controls" id="touchControls">
+        <div class="touch-stick-area" id="touchStick">
+          <div class="touch-nub" id="touchNub"></div>
+        </div>
+        <div class="touch-actions-group">
+          <button class="touch-btn sprint" id="touchSprint">SPRINT</button>
+          <button class="touch-btn shoot" id="touchShoot">SHOOT</button>
+          <button class="touch-btn pass" id="touchPass">PASS</button>
+          <button class="touch-btn switch" id="touchSwitch">SWITCH</button>
+        </div>
+      </div>
+
       <!-- Pause Menu Overlay -->
       <div class="hud-overlay hidden" id="pauseOverlay">
         <div class="hud-modal">
@@ -166,6 +179,45 @@ export class MatchHUD {
     document.getElementById('btnExitToMenu').onclick = () => {
       if (this.onQuit) this.onQuit();
     };
+
+    // Touch stick & action buttons
+    const passBtn = document.getElementById('touchPass');
+    const shootBtn = document.getElementById('touchShoot');
+    const sprintBtn = document.getElementById('touchSprint');
+    const switchBtn = document.getElementById('touchSwitch');
+
+    if (passBtn) {
+      passBtn.onpointerdown = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyS' }));
+      };
+    }
+    if (shootBtn) {
+      shootBtn.onpointerdown = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyD' }));
+      };
+      shootBtn.onpointerup = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyD' }));
+      };
+    }
+    if (sprintBtn) {
+      sprintBtn.onpointerdown = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'ShiftLeft' }));
+      };
+      sprintBtn.onpointerup = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new KeyboardEvent('keyup', { code: 'ShiftLeft' }));
+      };
+    }
+    if (switchBtn) {
+      switchBtn.onpointerdown = (e) => {
+        e.preventDefault();
+        window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyQ' }));
+      };
+    }
   }
 
   bindSimulation() {

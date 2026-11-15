@@ -144,9 +144,8 @@ export class SquadBuilderUI {
     formationData.home.forEach((slot, index) => {
       const player = startingXI[index] || this.currentTeam.roster[0];
 
-      // Convert 0..105, 0..68 coordinate into percentage on vertical pitch
-      // slot.pos[0] (0..105): 0 is GK (bottom of tactical board), 105 is ST (top)
-      const topPct = 90 - (slot.pos[0] / 52.5) * 44; // keep inside tactical board
+      // Convert tactical coordinates to percentages across tactical board
+      const topPct = 88 - (slot.pos[0] / 50) * 68;
       const leftPct = (slot.pos[1] / 68) * 82 + 9;
 
       const card = document.createElement('div');

@@ -116,5 +116,10 @@ export class Ball3D {
     this.shadow.scale.set(shadowScale, shadowScale, shadowScale);
     this.shadow.material.opacity = Math.max(0.1, 0.55 - heightAboveGround * 0.08);
   }
+
+  dispose() {
+    this.scene.remove(this.group);
+    this.scene.remove(this.shadow);
+  }
 }
 

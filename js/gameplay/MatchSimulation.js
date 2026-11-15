@@ -609,7 +609,7 @@ export class MatchSimulation {
   dispose() {
     this.homePlayers.forEach(p => p.dispose());
     this.awayPlayers.forEach(p => p.dispose());
-    this.scene.remove(this.ball.group);
+    this.ball.dispose();
   }
 }
 
