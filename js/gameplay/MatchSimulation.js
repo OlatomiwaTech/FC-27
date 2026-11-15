@@ -8,6 +8,7 @@ import { Player3D } from '../graphics/Player3D.js';
 import { Goalkeeper3D } from '../graphics/Goalkeeper3D.js';
 import { Ball3D } from '../graphics/Ball3D.js';
 import { Referee3D } from '../graphics/Referee3D.js';
+import { GOAL_HEIGHT, GOAL_WIDTH, PITCH_LENGTH, PITCH_WIDTH } from '../graphics/Stadium3D.js';
 import { AIController } from './AIController.js';
 import { CommentarySystem } from '../audio/CommentarySystem.js';
 import { FORMATIONS } from '../data/TeamsData.js';
@@ -42,6 +43,7 @@ export class MatchSimulation {
     this.elapsedRealSeconds = 0;
     this.homeScore = 0;
     this.awayScore = 0;
+    this.woodworkCooldown = 0;
     this.homeShots = 0;
     this.awayShots = 0;
     this.homePossessionTime = 0;
@@ -107,10 +109,10 @@ export class MatchSimulation {
       player.teamData = this.homeTeamData;
       player.isGoalkeeper = isGK;
 
-      // Base formation coordinates (mapped from 0..105, 0..68 to -52.5..52.5, -34..34)
+      // Base formation coordinates map the pitch dimensions onto centered world coordinates.
       const formCoord = homeForm.home[idx].pos;
-      const x = formCoord[0] - 52.5;
-      const z = formCoord[1] - 34;
+      const x = formCoord[0] - PITCH_LENGTH / 2;
+      const z = formCoord[1] - PITCH_WIDTH / 2;
       player.baseFormationSpot = new THREE.Vector3(x, 0, z);
       player.position.copy(player.baseFormationSpot);
 
@@ -130,8 +132,8 @@ export class MatchSimulation {
 
       const formCoord = awayForm.home[idx].pos;
       // Mirror X and Z for opponent
-      const x = -(formCoord[0] - 52.5);
-      const z = -(formCoord[1] - 34);
+      const x = -(formCoord[0] - PITCH_LENGTH / 2);
+      const z = -(formCoord[1] - PITCH_WIDTH / 2);
       player.baseFormationSpot = new THREE.Vector3(x, 0, z);
       player.position.copy(player.baseFormationSpot);
 
@@ -432,8 +434,8 @@ export class MatchSimulation {
     this.homeShots++;
     this.recordPlayerStat(player, 'shots');
 
-    // Aim towards away goal (X = 52.5) with corner placement
-    const goalX = 52.5;
+    // Aim towards the away goal with corner placement.
+    const goalX = PITCH_LENGTH / 2;
     const targetZ = (Math.random() - 0.5) * 5.8; // inside 7.32m goal frame
     const shotSpeed = 22 + power * 15; // 22 to 37 m/s!
     const loft = 2.5 + power * 4.5;
@@ -579,59 +581,97 @@ export class MatchSimulation {
     }
   }
 
+  resolveGoalFrameCollision() {
+    const ball = this.ball;
+    const halfGoalWidth = GOAL_WIDTH / 2;
+    const collisionRadius = ball.radius + 0.1;
+    let hitFrame = false;
+
+    const resolveContact = (x, y, z) => {
+      const dx = ball.position.x - x;
+      const dy = ball.position.y - y;
+      const dz = ball.position.z - z;
+      const distance = Math.hypot(dx, dy, dz);
+      if (distance >= collisionRadius) return false;
+
+      const normalX = distance > 1e-6 ? dx / distance : (ball.velocity.x > 0 ? -1 : 1);
+      const normalY = distance > 1e-6 ? dy / distance : 0;
+      const normalZ = distance > 1e-6 ? dz / distance : 0;
+      ball.position.set(
+        x + normalX * collisionRadius,
+        y + normalY * collisionRadius,
+        z + normalZ * collisionRadius
+      );
+
+      const normalSpeed = ball.velocity.x * normalX +
+        ball.velocity.y * normalY +
+        ball.velocity.z * normalZ;
+      if (normalSpeed < 0) {
+        const bounce = 1.72 * normalSpeed;
+        ball.velocity.x -= bounce * normalX;
+        ball.velocity.y -= bounce * normalY;
+        ball.velocity.z -= bounce * normalZ;
+      }
+      return true;
+    };
+
+    [-PITCH_LENGTH / 2, PITCH_LENGTH / 2].forEach(goalX => {
+      if (hitFrame) return;
+      for (const postZ of [-halfGoalWidth, halfGoalWidth]) {
+        const postY = Math.max(0, Math.min(GOAL_HEIGHT, ball.position.y));
+        if (resolveContact(goalX, postY, postZ)) {
+          hitFrame = true;
+          break;
+        }
+      }
+
+      if (!hitFrame) {
+        const crossbarZ = Math.max(-halfGoalWidth, Math.min(halfGoalWidth, ball.position.z));
+        hitFrame = resolveContact(goalX, GOAL_HEIGHT, crossbarZ);
+      }
+    });
+
+    if (hitFrame && this.woodworkCooldown <= 0) {
+      this.woodworkCooldown = 0.3;
+      this.sound.playPostHit();
+      this.notify('OFF THE WOODWORK!');
+      this.commentary.commentWoodwork();
+    }
+
+    return hitFrame;
+  }
+
   updatePhysics(dt) {
     const ball = this.ball;
+    this.woodworkCooldown = Math.max(0, this.woodworkCooldown - dt);
 
     if (ball.owner) {
       // Ball is attached to carrier feet
       return;
     }
 
-    // Apply gravity
-    ball.velocity.y -= 9.81 * dt;
+    const substeps = Math.max(1, Math.ceil(dt / 0.005));
+    const stepDt = dt / substeps;
 
-    // Apply air drag
-    ball.velocity.x *= (1 - 0.12 * dt);
-    ball.velocity.z *= (1 - 0.12 * dt);
+    for (let i = 0; i < substeps; i++) {
+      ball.velocity.y -= 9.81 * stepDt;
+      ball.velocity.x *= 1 - 0.12 * stepDt;
+      ball.velocity.z *= 1 - 0.12 * stepDt;
+      ball.position.addScaledVector(ball.velocity, stepDt);
 
-    // Integrate position
-    ball.position.addScaledVector(ball.velocity, dt);
-
-    // Turf bounce & friction
-    if (ball.position.y <= ball.radius) {
-      ball.position.y = ball.radius;
-      if (Math.abs(ball.velocity.y) > 0.6) {
-        ball.velocity.y = -ball.velocity.y * 0.58; // bounce restitution
-      } else {
-        ball.velocity.y = 0;
+      if (ball.position.y <= ball.radius) {
+        ball.position.y = ball.radius;
+        if (Math.abs(ball.velocity.y) > 0.6) {
+          ball.velocity.y = -ball.velocity.y * 0.58;
+        } else {
+          ball.velocity.y = 0;
+        }
+        ball.velocity.x *= 1 - 0.72 * stepDt;
+        ball.velocity.z *= 1 - 0.72 * stepDt;
       }
-      // Turf rolling friction
-      ball.velocity.x *= (1 - 0.72 * dt);
-      ball.velocity.z *= (1 - 0.72 * dt);
+
+      this.resolveGoalFrameCollision();
     }
-
-    // Goal Post & Crossbar Collision check
-    [-52.5, 52.5].forEach(goalX => {
-      const isAtGoalLine = Math.abs(ball.position.x - goalX) < 0.45;
-      if (isAtGoalLine) {
-        // Check Left & Right Posts (Z = ±3.66)
-        if (Math.abs(Math.abs(ball.position.z) - 3.66) < 0.28 && ball.position.y < 2.5) {
-          ball.velocity.x = -ball.velocity.x * 0.75;
-          ball.velocity.z = (ball.position.z > 0 ? 6 : -6);
-          this.sound.playPostHit();
-          this.notify('OFF THE WOODWORK!');
-          this.commentary.commentWoodwork();
-        }
-        // Check Crossbar (Y = 2.44, Z between -3.66 and 3.66)
-        if (Math.abs(ball.position.y - 2.44) < 0.28 && Math.abs(ball.position.z) < 3.66) {
-          ball.velocity.y = -ball.velocity.y * 0.7;
-          ball.velocity.x = -ball.velocity.x * 0.7;
-          this.sound.playPostHit();
-          this.notify('OFF THE CROSSBAR!');
-          this.commentary.commentWoodwork();
-        }
-      }
-    });
 
     // Check Loose Ball Pickup by nearest player
     if (Math.hypot(ball.velocity.x, ball.velocity.z) < 18 && ball.position.y < 1.4) {
@@ -648,14 +688,16 @@ export class MatchSimulation {
       }
     }
 
-    // Goal Detection (X beyond ±52.5 between Z [-3.66, 3.66] and Y [0, 2.44])
+    // Count only when the whole ball has crossed the line and fits inside the frame.
     if (this.matchState === 'playing') {
-      // Home Goal scored at Away Net (X > 52.5)
-      if (ball.position.x > 52.5 && Math.abs(ball.position.z) < 3.66 && ball.position.y < 2.44) {
+      const ballFitsInsideFrame =
+        Math.abs(ball.position.z) + ball.radius <= GOAL_WIDTH / 2 &&
+        ball.position.y + ball.radius <= GOAL_HEIGHT &&
+        ball.position.y - ball.radius >= 0;
+      const goalLineX = PITCH_LENGTH / 2;
+      if (ballFitsInsideFrame && ball.position.x - ball.radius >= goalLineX) {
         this.triggerGoal('home');
-      }
-      // Away Goal scored at Home Net (X < -52.5)
-      else if (ball.position.x < -52.5 && Math.abs(ball.position.z) < 3.66 && ball.position.y < 2.44) {
+      } else if (ballFitsInsideFrame && ball.position.x + ball.radius <= -goalLineX) {
         this.triggerGoal('away');
       }
       // Out of bounds / touchline

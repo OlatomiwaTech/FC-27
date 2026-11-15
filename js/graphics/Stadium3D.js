@@ -4,6 +4,12 @@
  * spectator tiers, LED ad hoardings, roof trusses, and stadium floodlights.
  */
 
+export const PITCH_LENGTH = 105;
+export const PITCH_WIDTH = 68;
+export const GOAL_WIDTH = 7.32;
+export const GOAL_HEIGHT = 2.44;
+export const GOAL_DEPTH = 2.2;
+
 export class Stadium3D {
   constructor(scene, stadiumData) {
     this.scene = scene;
@@ -12,11 +18,11 @@ export class Stadium3D {
     this.scene.add(this.group);
 
     // Stadium Dimensions (in meters)
-    this.pitchLength = 105;
-    this.pitchWidth = 68;
-    this.goalWidth = 7.32;
-    this.goalHeight = 2.44;
-    this.goalDepth = 2.2;
+    this.pitchLength = PITCH_LENGTH;
+    this.pitchWidth = PITCH_WIDTH;
+    this.goalWidth = GOAL_WIDTH;
+    this.goalHeight = GOAL_HEIGHT;
+    this.goalDepth = GOAL_DEPTH;
 
     this.adMaterials = [];
     this.flagMeshes = [];
@@ -242,8 +248,8 @@ export class Stadium3D {
 
     // 3D Pitch Plane
     // Scale slightly larger than 105x68 to accommodate run-off margins
-    const totalLength = 118;
-    const totalWidth = 78;
+    const totalLength = this.pitchLength * canvas.width / w;
+    const totalWidth = this.pitchWidth * canvas.height / h;
     const pitchGeo = new THREE.PlaneGeometry(totalLength, totalWidth);
     const pitchMat = new THREE.MeshStandardMaterial({
       map: pitchTexture,
@@ -269,14 +275,16 @@ export class Stadium3D {
   createGoals() {
     const postMat = new THREE.MeshStandardMaterial({
       color: 0xffffff,
-      metalness: 0.85,
-      roughness: 0.15
+      metalness: 0.18,
+      roughness: 0.3,
+      emissive: 0x18283a,
+      emissiveIntensity: 0.35
     });
 
     const netMat = new THREE.LineBasicMaterial({
-      color: 0xe2e8f0,
+      color: 0xf1f5f9,
       transparent: true,
-      opacity: 0.72,
+      opacity: 0.88,
       depthWrite: false
     });
 
@@ -290,7 +298,7 @@ export class Stadium3D {
       }
 
       // Vertical Posts
-      const postRadius = 0.08;
+      const postRadius = 0.1;
       const postGeo = new THREE.CylinderGeometry(postRadius, postRadius, this.goalHeight, 16);
 
       const post1 = new THREE.Mesh(postGeo, postMat);
@@ -312,7 +320,7 @@ export class Stadium3D {
       goalGroup.add(crossbar);
 
       // Stanchions / Back Support Struts
-      const supportGeo = new THREE.CylinderGeometry(0.04, 0.04, 2.5, 8);
+      const supportGeo = new THREE.CylinderGeometry(0.045, 0.045, 2.5, 8);
       const s1 = new THREE.Mesh(supportGeo, postMat);
       s1.position.set(-1.1, this.goalHeight * 0.7, -this.goalWidth / 2);
       s1.rotation.z = Math.PI / 4;
@@ -331,8 +339,8 @@ export class Stadium3D {
       };
       const backX = -this.goalDepth;
       const halfWidth = this.goalWidth / 2;
-      const verticalSteps = 12;
-      const horizontalSteps = 6;
+      const verticalSteps = 18;
+      const horizontalSteps = 10;
 
       for (let i = 0; i <= verticalSteps; i++) {
         const z = -halfWidth + (this.goalWidth * i) / verticalSteps;

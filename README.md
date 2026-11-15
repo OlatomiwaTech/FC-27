@@ -38,7 +38,7 @@ Inspired by modern AAA sports titles (such as EA Sports FC), **FC 27** delivers 
 ---
 
 ### 3. Gameplay Mechanics & Physics Engine
-- **3D Ball Aerodynamics**: Realistic gravity, air drag, turf rolling friction, bounce restitution, and goalpost/crossbar collision detection with metallic ping audio.
+- **3D Ball Aerodynamics**: Substepped gravity, air drag, turf rolling friction, bounce restitution, and goalpost/crossbar collisions with metallic ping audio. Pitch markings align with the goal frames, and a goal counts only after the whole ball crosses the line inside the posts and beneath the bar.
 - **Broadcast Commentary**: Spoken match calls with readable on-screen captions for play, saves, goals, and woodwork.
 - **Touchline Match Management**: Live substitutions (five per match), a rolling action replay, provisional and full-time Player of the Match ratings, and pause-menu camera/audio settings.
 - **Goalkeepers & Goals**: Distinct keeper kits and gloves, predicted diving saves, open goal mouths, and individual net panels.
