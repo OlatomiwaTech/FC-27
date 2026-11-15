@@ -65,6 +65,7 @@ export class FC27Engine {
       sprint: false,
       shootHeld: false
     };
+    this.gamepadButtonsDown = new Set();
 
     // 5. Game State
     this.activeMode = 'menu'; // 'menu', 'kickoff_setup', 'match', 'training_drill', 'squad', 'career', 'tournament', 'training'
@@ -194,7 +195,18 @@ export class FC27Engine {
   pollGamepad() {
     const gamepads = navigator.getGamepads ? navigator.getGamepads() : [];
     const gp = gamepads[0];
-    if (!gp) return;
+    if (!gp) {
+      this.gamepadButtonsDown.clear();
+      return;
+    }
+
+    const pressedButtons = new Set();
+    const pressed = index => {
+      const down = gp.buttons[index]?.pressed || false;
+      if (down) pressedButtons.add(index);
+      return down;
+    };
+    const pressedThisFrame = index => pressed(index) && !this.gamepadButtonsDown.has(index);
 
     const deadzone = 0.25;
     const axX = gp.axes[0] || 0;
@@ -210,26 +222,30 @@ export class FC27Engine {
     }
 
     // D-Pad
-    if (gp.buttons[12]?.pressed) this.input.up = true;
-    if (gp.buttons[13]?.pressed) this.input.down = true;
-    if (gp.buttons[14]?.pressed) this.input.left = true;
-    if (gp.buttons[15]?.pressed) this.input.right = true;
+    if (pressed(12)) this.input.up = true;
+    if (pressed(13)) this.input.down = true;
+    if (pressed(14)) this.input.left = true;
+    if (pressed(15)) this.input.right = true;
 
     // Face Buttons
-    if (gp.buttons[0]?.pressed) this.input.passTriggered = true; // A (Pass)
-    if (gp.buttons[1]?.pressed) this.input.shootHeld = true; // B (Shoot)
-    if (gp.buttons[2]?.pressed) this.input.crossTriggered = true; // X (Cross)
-    if (gp.buttons[3]?.pressed) this.input.throughTriggered = true; // Y (Through)
+    if (pressedThisFrame(0)) this.input.passTriggered = true; // A (Pass)
+    if (pressed(1)) this.input.shootHeld = true; // B (Shoot)
+    if (pressedThisFrame(2)) {
+      this.input.crossTriggered = true; // X (Cross)
+      this.input.slideTriggered = true; // X (Tackle while defending)
+    }
+    if (pressedThisFrame(3)) this.input.throughTriggered = true; // Y (Through)
 
     // Triggers / Bumpers
     if (gp.buttons[7]?.pressed || gp.buttons[7]?.value > 0.4) this.input.sprint = true; // RT
-    if (gp.buttons[4]?.pressed) this.input.switchTriggered = true; // LB
-    if (gp.buttons[5]?.pressed) this.input.skillTriggered = true; // RB
-    if (gp.buttons[9]?.pressed) { // Start Button (Pause)
+    if (pressedThisFrame(4)) this.input.switchTriggered = true; // LB
+    if (pressedThisFrame(5)) this.input.skillTriggered = true; // RB
+    if (pressedThisFrame(9)) { // Start Button (Pause)
       if (this.activeMode === 'match' && this.currentHUD) {
         this.currentHUD.togglePause(this.currentSimulation.matchState !== 'paused');
       }
     }
+    this.gamepadButtonsDown = pressedButtons;
   }
 
   updateInputState() {

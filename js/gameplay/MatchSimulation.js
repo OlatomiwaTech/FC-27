@@ -79,6 +79,7 @@ export class MatchSimulation {
     this.onCommentary = null;
     this.onStaminaUpdate = null;
     this.onPowerUpdate = null;
+    this.onHalfTime = null;
     this.onMatchEnd = null;
 
     this.initTeams();
@@ -680,6 +681,8 @@ export class MatchSimulation {
 
   triggerGoal(scoringTeam) {
     this.matchState = 'goal_celebration';
+    this.lastScoringTeam = scoringTeam;
+    this.goalCelebrationTimer = 4.2;
     this.sound.playNetRustle();
     this.sound.playGoalCheer();
     if (window.fcEngine?.music) window.fcEngine.music.duckVolume(0.12, 4.2);
@@ -711,15 +714,6 @@ export class MatchSimulation {
       this.onScoreUpdate(this.homeScore, this.awayScore);
     }
 
-    // Celebrate for 4 seconds then restart kickoff and restore broadcast cam
-    setTimeout(() => {
-      if (this.matchState === 'goal_celebration') {
-        if (window.fcEngine?.cameraSystem) {
-          window.fcEngine.cameraSystem.setMode('broadcast');
-        }
-        this.resetToKickoff(scoringTeam === 'home' ? 'away' : 'home');
-      }
-    }, 4200);
   }
 
   update(dt, input) {
@@ -728,6 +722,17 @@ export class MatchSimulation {
       return;
     }
     if (this.matchState === 'paused') return;
+    if (this.matchState === 'goal_celebration') {
+      this.goalCelebrationTimer -= dt;
+      this.ball.update(dt);
+      this.homePlayers.forEach(player => player.update(dt));
+      this.awayPlayers.forEach(player => player.update(dt));
+      if (this.goalCelebrationTimer <= 0) {
+        window.fcEngine?.cameraSystem.setMode('broadcast');
+        this.resetToKickoff(this.lastScoringTeam === 'home' ? 'away' : 'home');
+      }
+      return;
+    }
 
     // Track elapsed time & match clock (0' to 90')
     this.elapsedRealSeconds += dt;
@@ -748,6 +753,7 @@ export class MatchSimulation {
       this.sound.playWhistle('triple');
       this.commentary.commentHalfTime(this.homeScore, this.awayScore);
       this.notify('HALF TIME · TEAMS HEAD TO THE DRESSING ROOMS');
+      if (this.onHalfTime) this.onHalfTime(this.homeScore, this.awayScore);
       return;
     }
 
@@ -802,12 +808,15 @@ export class MatchSimulation {
     this.replayFrames.push({
       time: this.replayTime,
       ball: this.ball.position.clone(),
+      ballVelocity: this.ball.velocity.clone(),
       home: this.homePlayers.map(player => ({
         position: player.position.clone(),
+        velocity: player.velocity.clone(),
         rotation: player.rotation
       })),
       away: this.awayPlayers.map(player => ({
         position: player.position.clone(),
+        velocity: player.velocity.clone(),
         rotation: player.rotation
       }))
     });
@@ -824,12 +833,14 @@ export class MatchSimulation {
       home: this.homePlayers.map(player => ({
         position: player.position.clone(),
         velocity: player.velocity.clone(),
-        rotation: player.rotation
+        rotation: player.rotation,
+        animation: this.capturePlayerAnimation(player)
       })),
       away: this.awayPlayers.map(player => ({
         position: player.position.clone(),
         velocity: player.velocity.clone(),
-        rotation: player.rotation
+        rotation: player.rotation,
+        animation: this.capturePlayerAnimation(player)
       }))
     };
     this.replayElapsed = 0;
@@ -860,15 +871,18 @@ export class MatchSimulation {
     const progress = Math.max(0, Math.min(1, (replayTime - previous.time) / span));
 
     this.ball.position.lerpVectors(previous.ball, next.ball, progress);
+    this.ball.velocity.lerpVectors(previous.ballVelocity || this.ball.velocity, next.ballVelocity || this.ball.velocity, progress);
     this.ball.owner = null;
     this.homePlayers.forEach((player, index) => {
       player.position.lerpVectors(previous.home[index].position, next.home[index].position, progress);
+      player.velocity.lerpVectors(previous.home[index].velocity, next.home[index].velocity, progress);
       player.rotation = previous.home[index].rotation +
         (next.home[index].rotation - previous.home[index].rotation) * progress;
       player.update(dt);
     });
     this.awayPlayers.forEach((player, index) => {
       player.position.lerpVectors(previous.away[index].position, next.away[index].position, progress);
+      player.velocity.lerpVectors(previous.away[index].velocity, next.away[index].velocity, progress);
       player.rotation = previous.away[index].rotation +
         (next.away[index].rotation - previous.away[index].rotation) * progress;
       player.update(dt);
@@ -889,12 +903,14 @@ export class MatchSimulation {
       player.position.copy(this.replayRestoreState.home[index].position);
       player.velocity.copy(this.replayRestoreState.home[index].velocity);
       player.rotation = this.replayRestoreState.home[index].rotation;
+      this.restorePlayerAnimation(player, this.replayRestoreState.home[index].animation);
       player.update(0);
     });
     this.awayPlayers.forEach((player, index) => {
       player.position.copy(this.replayRestoreState.away[index].position);
       player.velocity.copy(this.replayRestoreState.away[index].velocity);
       player.rotation = this.replayRestoreState.away[index].rotation;
+      this.restorePlayerAnimation(player, this.replayRestoreState.away[index].animation);
       player.update(0);
     });
     this.ball.update(0);
@@ -904,6 +920,37 @@ export class MatchSimulation {
     window.fcEngine?.cameraSystem.setMode(this.replayCameraMode || 'broadcast');
     if (this.onReplayEnd) this.onReplayEnd();
     return true;
+  }
+
+  capturePlayerAnimation(player) {
+    const animation = {};
+    [
+      'state', 'animTime', 'kickProgress', 'tackleProgress', 'skillProgress',
+      'skillCooldown', 'skillBurst', 'diveProgress', 'celebrateProgress',
+      'catchProgress', 'throwProgress', 'punchProgress', 'isHoldingBall', 'saveCount'
+    ].forEach(key => {
+      if (key in player) {
+        animation[key] = player[key] instanceof THREE.Vector3
+          ? player[key].clone()
+          : player[key];
+      }
+    });
+    if (player.diveDirection !== undefined) {
+      animation.diveDirection = player.diveDirection instanceof THREE.Vector3
+        ? player.diveDirection.clone()
+        : player.diveDirection;
+    }
+    return animation;
+  }
+
+  restorePlayerAnimation(player, animation) {
+    Object.entries(animation).forEach(([key, value]) => {
+      if (player[key] instanceof THREE.Vector3) player[key].copy(value);
+      else player[key] = value;
+    });
+    player.bodyGroup.rotation.set(0, 0, 0);
+    player.bodyGroup.position.set(0, 0, 0);
+    if (player.resetLimbs) player.resetLimbs();
   }
 
   startSecondHalf() {

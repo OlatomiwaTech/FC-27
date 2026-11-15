@@ -175,11 +175,12 @@ export class MenuManager {
                 <div class="guide-grid">
                   <div><strong>Movement:</strong> WASD / Arrows / Left Stick</div>
                   <div><strong>Sprint:</strong> Left Shift / Gamepad RT</div>
-                  <div><strong>Short Pass:</strong> S / J / Gamepad A</div>
-                  <div><strong>Through Ball:</strong> W / I / Gamepad Y</div>
-                  <div><strong>Shoot (Charge):</strong> D / K / Space / Gamepad B</div>
-                  <div><strong>Lob / Cross:</strong> A / L / Gamepad X</div>
-                  <div><strong>Standing / Slide Tackle:</strong> Space / E / Gamepad X</div>
+                  <div><strong>Short Pass:</strong> J / Gamepad A</div>
+                  <div><strong>Through Ball:</strong> I / Gamepad Y</div>
+                  <div><strong>Shoot (Charge):</strong> K / Space / Gamepad B</div>
+                  <div><strong>Lob / Cross:</strong> L / Gamepad X</div>
+                  <div><strong>Skill Move:</strong> F / Gamepad RB (while carrying)</div>
+                  <div><strong>Standing / Slide Tackle:</strong> J / E / Gamepad X</div>
                   <div><strong>Switch Player:</strong> Q / Tab / Gamepad LB</div>
                   <div><strong>Pause Match:</strong> ESC / Start Button</div>
                 </div>
@@ -268,4 +269,3 @@ export class MenuManager {
     this.container.classList.add('hidden');
   }
 }
-

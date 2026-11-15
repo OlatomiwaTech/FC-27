@@ -313,7 +313,7 @@ export class MatchHUD {
     });
 
     this.bindTouchStick();
-    document.getElementById('matchCamera').value = this.engine.cameraSystem.mode;
+    this.syncCameraSetting();
     document.getElementById('matchVolume').value = this.engine.sound.volume;
     document.getElementById('matchCommentary').checked = this.sim.commentary.enabled;
     document.getElementById('matchAudio').checked = this.engine.sound.enabled;
@@ -391,10 +391,18 @@ export class MatchHUD {
   }
 
   openSettings() {
-    document.getElementById('matchCamera').value = this.engine.cameraSystem.mode;
+    this.syncCameraSetting();
     document.getElementById('matchVolume').value = this.engine.sound.volume;
     this.panelReturnTo = 'pauseOverlay';
     this.openPanel('matchSettingsOverlay');
+  }
+
+  syncCameraSetting() {
+    const select = document.getElementById('matchCamera');
+    const mode = this.engine.cameraSystem.mode;
+    select.value = Array.from(select.options).some(option => option.value === mode)
+      ? mode
+      : 'broadcast';
   }
 
   openReplay() {
@@ -464,6 +472,10 @@ export class MatchHUD {
   }
 
   resetMatch() {
+    document.querySelectorAll(
+      '#pauseOverlay, #replayOverlay, #substitutionOverlay, #matchSettingsOverlay, #motmOverlay, #halftimeOverlay, #fulltimeOverlay'
+    ).forEach(overlay => overlay.classList.add('hidden'));
+    this.pauseReturnState = 'playing';
     this.sim.homeScore = 0;
     this.sim.awayScore = 0;
     this.sim.homeShots = 0;
@@ -480,6 +492,8 @@ export class MatchHUD {
     this.sim.replayFrames = [];
     this.sim.replayTime = 0;
     this.sim.replayAccumulator = 0;
+    this.sim.chargingShot = false;
+    this.sim.shotPower = 0;
     this.sim.initTeams();
     this.renderSubstitutionOptions();
     document.getElementById('hudHomeScore').textContent = '0';
@@ -533,6 +547,14 @@ export class MatchHUD {
       document.getElementById('hudPowerBar').style.width = `${power * 100}%`;
     };
 
+    this.sim.onHalfTime = (home, away) => {
+      document.getElementById('htHomeName').textContent = this.sim.homeTeamData.name;
+      document.getElementById('htAwayName').textContent = this.sim.awayTeamData.name;
+      document.getElementById('htHomeScore').textContent = home;
+      document.getElementById('htAwayScore').textContent = away;
+      document.getElementById('halftimeOverlay').classList.remove('hidden');
+    };
+
     this.sim.onMatchEnd = (stats) => {
       document.getElementById('ftHomeName').textContent = this.sim.homeTeamData.name;
       document.getElementById('ftAwayName').textContent = this.sim.awayTeamData.name;
@@ -552,7 +574,7 @@ export class MatchHUD {
 
   togglePause(show) {
     const overlays = document.querySelectorAll(
-      '#pauseOverlay, #replayOverlay, #substitutionOverlay, #matchSettingsOverlay, #motmOverlay'
+      '#pauseOverlay, #replayOverlay, #substitutionOverlay, #matchSettingsOverlay, #motmOverlay, #halftimeOverlay, #fulltimeOverlay'
     );
     if (this.sim.isReplaying) {
       this.sim.stopReplay();
@@ -566,6 +588,11 @@ export class MatchHUD {
     } else {
       overlays.forEach(overlay => overlay.classList.add('hidden'));
       this.sim.matchState = this.pauseReturnState || 'playing';
+      if (this.sim.matchState === 'halftime') {
+        document.getElementById('halftimeOverlay').classList.remove('hidden');
+      } else if (this.sim.matchState === 'fulltime') {
+        document.getElementById('fulltimeOverlay').classList.remove('hidden');
+      }
     }
   }
 

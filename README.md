@@ -40,14 +40,16 @@ Inspired by modern AAA sports titles (such as EA Sports FC), **FC 27** delivers 
 ### 3. Gameplay Mechanics & Physics Engine
 - **3D Ball Aerodynamics**: Realistic gravity, air drag, turf rolling friction, bounce restitution, and goalpost/crossbar collision detection with metallic ping audio.
 - **Broadcast Commentary**: Spoken match calls with readable on-screen captions for play, saves, goals, and woodwork.
+- **Touchline Match Management**: Live substitutions (five per match), a rolling action replay, provisional and full-time Player of the Match ratings, and pause-menu camera/audio settings.
 - **Goalkeepers & Goals**: Distinct keeper kits and gloves, predicted diving saves, open goal mouths, and individual net panels.
 - **Procedural Player Graphics**: Original 3D footballers with team kits, shirt numbers, varied hair, facial details, and player-scale proportions.
 - **Ball Skills & Striking**:
-  - **Ground Pass / Short Pass** (`S` or `J`): Weighted distribution to targeted teammate.
-  - **Through Ball** (`W` or `I`): Threading passes into running space behind defensive lines.
-  - **Shoot with Power Gauge** (`D`, `K`, or `Space`): Hold to charge shot power from low driven shots to upper-90 top-corner missiles.
-  - **Lofted Cross / Lob** (`A` or `L`): High arcing crosses over defender heads.
-  - **Tackling** (`E` or `Space`): Crisp standing and sliding tackles with turf spray sound.
+  - **Ground Pass** (`J`): Weighted distribution to a targeted teammate.
+  - **Through Ball** (`I`): Threading passes into running space behind defensive lines.
+  - **Shoot with Power Gauge** (`K` or `Space`): Hold to charge shot power.
+  - **Lofted Cross / Lob** (`L`): High arcing crosses over defender heads.
+  - **Skill Move** (`F`): Feint and burst past a nearby defender while carrying the ball.
+  - **Tackling** (`J` while defending, or `E`): Standing and sliding tackles.
   - **Player Switching** (`Q` or `Tab`): Instantly switch to teammate nearest to the ball.
   - **Sprint & Stamina**: Left Shift sprint with active stamina depletion and recovery.
 - **Goalkeeper AI**:
@@ -79,11 +81,11 @@ Inspired by modern AAA sports titles (such as EA Sports FC), **FC 27** delivers 
 |---|---|---|
 | **Move Player** | `W` `A` `S` `D` or Arrow Keys | Left Analog Stick / D-Pad |
 | **Sprint** | `Left Shift` | `RT` / `R2` |
-| **Ground Pass** | `S` or `J` | `A` / `✕` |
-| **Shoot (Charge)** | `D` or `K` or `Space` | `B` / `○` |
-| **Through Ball** | `W` or `I` | `Y` / `△` |
-| **Lob / Cross** | `A` or `L` | `X` / `□` |
-| **Slide / Standing Tackle** | `Space` or `E` | `X` / `□` (Defending) |
+| **Ground Pass / Standing Tackle** | `J` | `A` / `✕` |
+| **Shoot (Charge)** | Hold `K` or `Space` | `B` / `○` |
+| **Through Ball** | `I` | `Y` / `△` |
+| **Lob / Cross / Slide Tackle** | `L` / `E` | `X` / `□` (contextual) |
+| **Skill Move** | `F` | `RB` / `R1` |
 | **Switch Player** | `Q` or `Tab` | `LB` / `L1` |
 | **Pause Match** | `ESC` | `Start` / `Options` |
 
