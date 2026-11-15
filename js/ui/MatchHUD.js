@@ -72,17 +72,22 @@ export class MatchHUD {
         <canvas id="radarCanvas" width="160" height="104"></canvas>
       </div>
 
-      <!-- Touch Controls for Mobile/Tablets -->
+      <!-- Touch controls and action dock -->
       <div class="hud-touch-controls" id="touchControls">
         <div class="touch-stick-area" id="touchStick">
           <div class="touch-nub" id="touchNub"></div>
         </div>
-        <div class="touch-actions-group">
-          <button class="touch-btn sprint" id="touchSprint">SPRINT</button>
-          <button class="touch-btn shoot" id="touchShoot">SHOOT</button>
-          <button class="touch-btn pass" id="touchPass">PASS</button>
-          <button class="touch-btn switch" id="touchSwitch">SWITCH</button>
-        </div>
+      </div>
+      <div class="hud-action-dock" id="matchActionDock" aria-label="Match controls">
+        <button class="match-action" data-action="switch" title="Switch player (Q)">SWITCH <kbd>Q</kbd></button>
+        <button class="match-action" data-action="tackle" title="Tackle (E)">TACKLE <kbd>E</kbd></button>
+        <button class="match-action" data-action="skill" title="Skill move (F)">SKILL <kbd>F</kbd></button>
+        <button class="match-action" data-action="sprint" title="Sprint (hold Shift)">SPRINT <kbd>⇧</kbd></button>
+        <button class="match-action" data-action="cross" title="Cross (L)">CROSS <kbd>L</kbd></button>
+        <button class="match-action" data-action="through" title="Through ball (I)">THROUGH <kbd>I</kbd></button>
+        <button class="match-action" data-action="pass" title="Pass (J)">PASS <kbd>J</kbd></button>
+        <button class="match-action primary" data-action="shoot" title="Shoot (hold K or Space)">SHOOT <kbd>K</kbd></button>
+        <button class="match-action pause" data-action="pause" title="Pause match (Esc)">PAUSE <kbd>Esc</kbd></button>
       </div>
 
       <!-- Pause Menu Overlay -->
@@ -93,10 +98,101 @@ export class MatchHUD {
           <p>Readjust your approach. Under the stadium floodlights, every second counts.</p>
           <div class="modal-actions">
             <button class="fc-btn primary" id="btnResumeMatch">RESUME MATCH <span>▶</span></button>
+            <button class="fc-btn secondary" id="btnReplay">REPLAY <span>↺</span></button>
+            <button class="fc-btn secondary" id="btnSubstitutions">SUBSTITUTIONS <span>⇄</span></button>
+            <button class="fc-btn secondary" id="btnMatchSettings">MATCH SETTINGS <span>⚙</span></button>
+            <button class="fc-btn secondary" id="btnPausedMOTM">PLAYER OF THE MATCH <span>★</span></button>
             <button class="fc-btn secondary" id="btnRestartMatch">RESTART KICK-OFF <span>↻</span></button>
             <button class="fc-btn danger" id="btnQuitMatch">QUIT TO MAIN MENU <span>✕</span></button>
           </div>
           <div class="modal-tip"><kbd>ESC</kbd> to return directly to the pitch</div>
+        </div>
+      </div>
+
+      <div class="hud-overlay hidden" id="replayOverlay">
+        <div class="hud-modal">
+          <div class="modal-badge">MATCH REPLAY</div>
+          <h2>LAST <em>12 SECONDS.</em></h2>
+          <p id="replayStatus">Review the recent action. The match will resume paused when the replay ends.</p>
+          <div class="replay-progress"><div id="replayProgressBar"></div></div>
+          <div class="modal-actions">
+            <button class="fc-btn secondary" id="btnExitReplay">EXIT REPLAY <span>■</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-overlay hidden" id="substitutionOverlay">
+        <div class="hud-modal">
+          <div class="modal-badge">TOUCHLINE</div>
+          <h2>MAKE A <em>SUBSTITUTION.</em></h2>
+          <p id="substitutionCount">0 of 5 substitutions used</p>
+          <div class="settings-form-grid">
+            <div class="setting-item">
+              <label for="subOutgoing">PLAYER COMING OFF</label>
+              <select id="subOutgoing"></select>
+            </div>
+            <div class="setting-item">
+              <label for="subIncoming">PLAYER COMING ON</label>
+              <select id="subIncoming"></select>
+            </div>
+          </div>
+          <p id="substitutionMessage" class="modal-feedback" aria-live="polite"></p>
+          <div class="modal-actions">
+            <button class="fc-btn primary" id="btnConfirmSubstitution">CONFIRM CHANGE <span>⇄</span></button>
+            <button class="fc-btn secondary" data-return-pause>BACK</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-overlay hidden" id="matchSettingsOverlay">
+        <div class="hud-modal">
+          <div class="modal-badge">IN-MATCH OPTIONS</div>
+          <h2>GAME <em>SETTINGS.</em></h2>
+          <div class="settings-form-grid">
+            <div class="setting-item">
+              <label for="matchCamera">CAMERA</label>
+              <select id="matchCamera">
+                <option value="broadcast">TV Broadcast</option>
+                <option value="tele">Tele</option>
+                <option value="end_to_end">End-to-End</option>
+                <option value="pro_cam">Pro Cam</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <label for="matchVolume">AUDIO VOLUME</label>
+              <input id="matchVolume" type="range" min="0" max="1" step="0.05">
+            </div>
+            <label class="match-toggle"><input id="matchCommentary" type="checkbox"> Spoken commentary</label>
+            <label class="match-toggle"><input id="matchAudio" type="checkbox"> Match sound effects</label>
+          </div>
+          <div class="controls-guide-box">
+            <h4>CONTROLS</h4>
+            <div class="guide-grid">
+              <span><strong>WASD / Arrows</strong> Move</span><span><strong>Shift</strong> Sprint</span>
+              <span><strong>K / Space</strong> Shoot</span><span><strong>J</strong> Pass</span>
+              <span><strong>I</strong> Through ball</span><span><strong>L</strong> Cross</span>
+              <span><strong>F</strong> Skill</span><span><strong>E</strong> Tackle</span>
+              <span><strong>Q / Tab</strong> Switch</span><span><strong>Esc</strong> Pause</span>
+            </div>
+          </div>
+          <div class="modal-actions">
+            <button class="fc-btn primary" data-return-pause>DONE</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="hud-overlay hidden" id="motmOverlay">
+        <div class="hud-modal">
+          <div class="modal-badge" id="motmStatus">CURRENT LEADER</div>
+          <h2>PLAYER OF THE <em>MATCH.</em></h2>
+          <div class="motm-card">
+            <div class="motm-rating" id="motmRating">6.0</div>
+            <div><strong id="motmName">PLAYER</strong><span id="motmDetails"></span></div>
+          </div>
+          <p id="motmStats" class="motm-stats"></p>
+          <div class="modal-actions">
+            <button class="fc-btn primary" data-return-pause id="btnCloseMOTM">BACK</button>
+          </div>
         </div>
       </div>
 
@@ -135,6 +231,7 @@ export class MatchHUD {
             <div class="stat-col"><small>POSSESSION</small><strong id="ftPossession">50% — 50%</strong></div>
             <div class="stat-col"><small>TOTAL SHOTS</small><strong id="ftShots">0 — 0</strong></div>
           </div>
+          <button class="fc-btn secondary" id="btnFulltimeMOTM">PLAYER OF THE MATCH <span>★</span></button>
           <div class="modal-actions">
             <button class="fc-btn primary" id="btnRematch">PLAY AGAIN <span>↻</span></button>
             <button class="fc-btn secondary" id="btnExitToMenu">RETURN TO MENU <span>⌂</span></button>

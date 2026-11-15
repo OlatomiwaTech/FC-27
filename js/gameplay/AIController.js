@@ -58,6 +58,7 @@ export class AIController {
         
         if (saveSuccess) {
           // Successful save
+          this.sim.recordPlayerStat(gk, 'saves');
           if (gk.pendingSave.type === 'catch' && Math.random() < 0.6) {
             // Caught - GK holds ball
             if (gk.triggerCatch) {

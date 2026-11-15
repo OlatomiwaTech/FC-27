@@ -56,6 +56,7 @@ export class FC27Engine {
       shootHeld: false,
       throughTriggered: false,
       crossTriggered: false,
+      skillTriggered: false,
       slideTriggered: false,
       switchTriggered: false
     };
@@ -143,7 +144,7 @@ export class FC27Engine {
       // Audio context unlock on first key interaction
       this.sound.ensureContext();
 
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(e.code)) {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', 'Tab'].includes(e.code)) {
         e.preventDefault();
       }
 
@@ -155,16 +156,19 @@ export class FC27Engine {
       }
 
       // One-shot triggers
-      if (e.code === 'KeyS' || e.code === 'KeyJ') {
+      if (e.code === 'KeyJ') {
         this.input.passTriggered = true;
       }
-      if (e.code === 'KeyW' || e.code === 'KeyI') {
+      if (e.code === 'KeyI') {
         this.input.throughTriggered = true;
       }
-      if (e.code === 'KeyA' || e.code === 'KeyL') {
+      if (e.code === 'KeyL') {
         this.input.crossTriggered = true;
       }
-      if (e.code === 'Space' || e.code === 'KeyE') {
+      if (e.code === 'KeyF') {
+        this.input.skillTriggered = true;
+      }
+      if (e.code === 'KeyE') {
         this.input.slideTriggered = true;
       }
       if (e.code === 'KeyQ' || e.code === 'Tab') {
@@ -215,6 +219,7 @@ export class FC27Engine {
     // Triggers / Bumpers
     if (gp.buttons[7]?.pressed || gp.buttons[7]?.value > 0.4) this.input.sprint = true; // RT
     if (gp.buttons[4]?.pressed) this.input.switchTriggered = true; // LB
+    if (gp.buttons[5]?.pressed) this.input.skillTriggered = true; // RB
     if (gp.buttons[9]?.pressed) { // Start Button (Pause)
       if (this.activeMode === 'match' && this.currentHUD) {
         this.currentHUD.togglePause(this.currentSimulation.matchState !== 'paused');
@@ -229,7 +234,7 @@ export class FC27Engine {
     this.input.right = this.keysDown.has('KeyD') || this.keysDown.has('ArrowRight');
 
     this.input.sprint = this.keysDown.has('ShiftLeft') || this.keysDown.has('ShiftRight');
-    this.input.shootHeld = this.keysDown.has('KeyD') || this.keysDown.has('KeyK') || this.keysDown.has('Space');
+    this.input.shootHeld = this.keysDown.has('KeyK') || this.keysDown.has('Space');
 
     // Poll Gamepad
     this.pollGamepad();
@@ -434,6 +439,7 @@ export class FC27Engine {
     this.input.passTriggered = false;
     this.input.throughTriggered = false;
     this.input.crossTriggered = false;
+    this.input.skillTriggered = false;
     this.input.slideTriggered = false;
     this.input.switchTriggered = false;
 
@@ -448,4 +454,3 @@ export class FC27Engine {
 window.addEventListener('DOMContentLoaded', () => {
   window.fcEngine = new FC27Engine();
 });
-
